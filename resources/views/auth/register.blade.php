@@ -1,5 +1,4 @@
 <html>
-
 <head>
     <title>Register</title>
     <style>

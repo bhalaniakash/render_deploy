@@ -67,10 +67,10 @@ COPY --from=vendor /app /var/www/html
 # Copy built assets (if present)
 COPY --from=node_builder /app/public /var/www/html/public
 
-# Ensure Apache serves the Laravel `public` directory
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-RUN sed -ri "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf \
-    && a2enmod rewrite headers
+# Ensure Apache serves the Laravel `public` directory by writing a vhost that
+# sets DocumentRoot to /var/www/html/public and enables overrides.
+RUN a2enmod rewrite headers \
+ && printf '%s' "<VirtualHost *:80>\n    ServerAdmin webmaster@localhost\n    DocumentRoot /var/www/html/public\n    DirectoryIndex index.php index.html\n    <Directory /var/www/html/public>\n        Options Indexes FollowSymLinks\n        AllowOverride All\n        Require all granted\n    </Directory>\n    ErrorLog ${APACHE_LOG_DIR}/error.log\n    CustomLog ${APACHE_LOG_DIR}/access.log combined\n</VirtualHost>\n" > /etc/apache2/sites-available/000-default.conf
 
 # Set permissions for storage and cache and public files
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public || true
@@ -82,6 +82,4 @@ ENV APP_ENV=production \
 EXPOSE 80
 
 # Start Apache in the foreground
-CMD ["apache2-foreground"]
-EXPOSE 10000
 CMD ["apache2-foreground"]
