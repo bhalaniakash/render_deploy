@@ -67,16 +67,21 @@ COPY --from=vendor /app /var/www/html
 # Copy built assets (if present)
 COPY --from=node_builder /app/public /var/www/html/public
 
-# Set permissions for storage and cache
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache || true
+# Ensure Apache serves the Laravel `public` directory
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+RUN sed -ri "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-available/*.conf /etc/apache2/apache2.conf \
+    && a2enmod rewrite headers
+
+# Set permissions for storage and cache and public files
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public || true
 
 ENV APP_ENV=production \
     APP_DEBUG=false \
     LOG_CHANNEL=stderr
 
-EXPOSE 9000
+EXPOSE 80
 
-# Use php-fpm as entrypoint (container runs FPM)
-CMD ["php-fpm"]
+# Start Apache in the foreground
+CMD ["apache2-foreground"]
 EXPOSE 10000
 CMD ["apache2-foreground"]
