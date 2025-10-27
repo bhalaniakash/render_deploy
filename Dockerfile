@@ -23,9 +23,12 @@ RUN apt-get update && apt-get install -y git unzip zip libzip-dev libpng-dev lib
 
 COPY --from=vendor /app /var/www/html
 COPY --from=node_builder /app/public /var/www/html/public
-
 RUN a2enmod rewrite headers
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Create an explicit VirtualHost so Apache serves the Laravel public folder
+RUN printf '%s' "<VirtualHost *:80>\n    ServerAdmin webmaster@localhost\n    DocumentRoot /var/www/html/public\n    DirectoryIndex index.php index.html\n    <Directory /var/www/html/public>\n        Options Indexes FollowSymLinks\n        AllowOverride All\n        Require all granted\n    </Directory>\n    ErrorLog ${APACHE_LOG_DIR}/error.log\n    CustomLog ${APACHE_LOG_DIR}/access.log combined\n</VirtualHost>\n" > /etc/apache2/sites-available/000-default.conf
+
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public || true
 
 WORKDIR /var/www/html
 EXPOSE 80
