@@ -25,8 +25,23 @@ COPY --from=vendor /app /var/www/html
 COPY --from=node_builder /app/public /var/www/html/public
 RUN a2enmod rewrite headers
 
-# Create an explicit VirtualHost so Apache serves the Laravel public folder
-RUN printf '%s' "<VirtualHost *:80>\n    ServerAdmin webmaster@localhost\n    DocumentRoot /var/www/html/public\n    DirectoryIndex index.php index.html\n    <Directory /var/www/html/public>\n        Options Indexes FollowSymLinks\n        AllowOverride All\n        Require all granted\n    </Directory>\n    ErrorLog ${APACHE_LOG_DIR}/error.log\n    CustomLog ${APACHE_LOG_DIR}/access.log combined\n</VirtualHost>\n" > /etc/apache2/sites-available/000-default.conf
+# # Create VirtualHost config
+RUN a2enmod rewrite headers && \
+    printf '%s\n' \
+    "<VirtualHost *:80>" \
+    "    ServerAdmin webmaster@localhost" \
+    "    DocumentRoot /var/www/html/public" \
+    "    DirectoryIndex index.php index.html" \
+    "    <Directory /var/www/html/public>" \
+    "        Options Indexes FollowSymLinks" \
+    "        AllowOverride All" \
+    "        Require all granted" \
+    "    </Directory>" \
+    "    ErrorLog \${APACHE_LOG_DIR}/error.log" \
+    "    CustomLog \${APACHE_LOG_DIR}/access.log combined" \
+    "</VirtualHost>" \
+    > /etc/apache2/sites-available/000-default.conf
+
 
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public || true
 
