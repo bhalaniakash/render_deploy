@@ -1,0 +1,75 @@
+### Multi-stage Dockerfile for Laravel (PHP 8.2, Composer vendors, Node asset build)
+# - Stage `vendor` installs PHP dependencies with Composer
+# - Stage `node` builds frontend assets using Node
+# - Final stage runs PHP-FPM and includes vendor + built assets
+
+#############################
+# Vendor stage (Composer)
+#############################
+FROM composer:2 AS vendor
+WORKDIR /app
+
+# Copy composer files and install dependencies (no dev)
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts
+
+# Copy the rest of the application so autoload and other files are available
+COPY . .
+
+# Optimize autoloader
+RUN composer dump-autoload --optimize --no-interaction
+
+#############################
+# Node stage (build assets)
+#############################
+FROM node:18-alpine AS node_builder
+WORKDIR /app
+
+# Copy only package files, install, then copy rest and build
+COPY package*.json ./
+RUN npm ci --silent
+COPY . .
+RUN if [ -f "package.json" ]; then npm run build || npm run production || true; fi
+
+#############################
+# Final stage (PHP-FPM)
+#############################
+FROM php:8.2-fpm
+
+# Install system dependencies and PHP extensions commonly needed by Laravel
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    unzip \
+    zip \
+    libzip-dev \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    ca-certificates \
+    curl \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath zip xml
+
+# Copy composer binary from vendor stage
+COPY --from=vendor /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+# Copy app files (including vendor) from vendor stage
+COPY --from=vendor /app /var/www/html
+
+# Copy built assets (if present)
+COPY --from=node_builder /app/public /var/www/html/public
+
+# Set permissions for storage and cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache || true
+
+ENV APP_ENV=production \
+    APP_DEBUG=false \
+    LOG_CHANNEL=stderr
+
+EXPOSE 9000
+
+# Use php-fpm as entrypoint (container runs FPM)
+CMD ["php-fpm"]

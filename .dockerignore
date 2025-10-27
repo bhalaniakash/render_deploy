@@ -1,0 +1,19 @@
+# Ignore files that should not be sent to the Docker daemon
+.git
+.github
+.gitignore
+node_modules
+vendor
+.env
+.env.*
+storage/*.key
+storage/framework/cache/data
+storage/debugbar
+storage/logs
+storage/clockwork
+.vscode
+npm-debug.log
+yarn-error.log
+.DS_Store
+/.idea
+/.phpunit.result.cache
