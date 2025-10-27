@@ -15,18 +15,18 @@ services:
       - key: DB_CONNECTION
         value: mysql
       - key: DB_HOST
-        fromService: mysql
+        fromDatabase: mysql
       - key: DB_PORT
         value: 3306
       - key: DB_DATABASE
-        value: rendorer_deploye
+        fromDatabase: mysql
       - key: DB_USERNAME
-        value: root
+        fromDatabase: mysql
       - key: DB_PASSWORD
-        value: 
+        fromDatabase: mysql
 
 databases:
   - name: mysql
     plan: free
-    databaseName: rendorer_deploye
-    user: root
+    databaseName: hungerhop_prod
+    user: hungerhop_user
