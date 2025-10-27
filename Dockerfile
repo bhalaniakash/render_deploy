@@ -1,48 +1,13 @@
-### Multi-stage Dockerfile for Laravel (PHP 8.2, Composer vendors, Node asset build)
-# - Stage `vendor` installs PHP dependencies with Composer
-# - Stage `node` builds frontend assets using Node
-# - Final stage runs PHP-FPM and includes vendor + built assets
+# =======================================================
+# 🐘 Laravel + Apache Production Dockerfile (PHP 8.2)
+# Works perfectly with Render free tier
+# =======================================================
 
-#############################
-# Vendor stage (Composer)
-#############################
-FROM composer:2 AS vendor
-WORKDIR /app
-
-# Copy composer files and install dependencies (no dev)
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts
-
-# Copy the rest of the application so autoload and other files are available
-COPY . .
-
-# Optimize autoloader
-RUN composer dump-autoload --optimize --no-interaction
-
-#############################
-# Node stage (build assets)
-#############################
-FROM node:18-alpine AS node_builder
-WORKDIR /app
-
-# Copy only package files, install, then copy rest and build
-COPY package*.json ./
-# Use npm ci when a lockfile is present for reproducible installs, otherwise fall back to npm install
-RUN if [ -f "package-lock.json" ] || [ -f "npm-shrinkwrap.json" ]; then \
-            npm ci --silent; \
-        else \
-            npm install --silent; \
-        fi
-COPY . .
-RUN if [ -f "package.json" ]; then npm run build || npm run production || true; fi
-
-#############################
-# Final stage (PHP-FPM)
-#############################
+# Use official PHP-Apache image
 FROM php:8.2-apache
 
-# Install system dependencies and PHP extensions commonly needed by Laravel
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Install system dependencies and PHP extensions needed for Laravel
+RUN apt-get update && apt-get install -y \
     git \
     unzip \
     zip \
@@ -52,34 +17,40 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxml2-dev \
     ca-certificates \
     curl \
+ && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath zip xml \
+ && a2enmod rewrite headers \
  && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath zip xml
+# Copy Composer from the Composer image
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy composer binary from vendor stage
-COPY --from=vendor /usr/bin/composer /usr/bin/composer
-
+# Set working directory
 WORKDIR /var/www/html
 
-# Copy app files (including vendor) from vendor stage
-COPY --from=vendor /app /var/www/html
+# Copy all Laravel project files into container
+COPY . .
 
-# Copy built assets (if present)
-COPY --from=node_builder /app/public /var/www/html/public
+# ✅ Set Apache document root to /public (Laravel’s front controller)
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
+RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/000-default.conf
 
-# Ensure Apache serves the Laravel `public` directory by writing a vhost that
-# sets DocumentRoot to /var/www/html/public and enables overrides.
-RUN a2enmod rewrite headers \
- && printf '%s' "<VirtualHost *:80>\n    ServerAdmin webmaster@localhost\n    DocumentRoot /var/www/html/public\n    DirectoryIndex index.php index.html\n    <Directory /var/www/html/public>\n        Options Indexes FollowSymLinks\n        AllowOverride All\n        Require all granted\n    </Directory>\n    ErrorLog ${APACHE_LOG_DIR}/error.log\n    CustomLog ${APACHE_LOG_DIR}/access.log combined\n</VirtualHost>\n" > /etc/apache2/sites-available/000-default.conf
+# ✅ Install Composer dependencies (production only)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
-# Set permissions for storage and cache and public files
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public || true
+# ✅ Set folder permissions for Laravel
+RUN chown -R www-data:www-data storage bootstrap/cache
+RUN chmod -R 755 /var/www/html
 
-ENV APP_ENV=production \
-    APP_DEBUG=false \
-    LOG_CHANNEL=stderr
+# ✅ Optional: Health check (helps Render detect if container is alive)
+HEALTHCHECK --interval=30s --timeout=10s CMD curl -f http://localhost/ || exit 1
 
+# Expose Apache’s port
 EXPOSE 80
+
+# Set environment defaults
+ENV APP_ENV=production
+ENV APP_DEBUG=false
+ENV LOG_CHANNEL=stderr
 
 # Start Apache in the foreground
 CMD ["apache2-foreground"]
