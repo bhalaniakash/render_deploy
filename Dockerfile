@@ -23,9 +23,6 @@ RUN apt-get update && apt-get install -y git unzip zip libzip-dev libpng-dev lib
 
 COPY --from=vendor /app /var/www/html
 COPY --from=node_builder /app/public /var/www/html/public
-RUN a2enmod rewrite headers
-
-# # Create VirtualHost config
 RUN a2enmod rewrite headers && \
     printf '%s\n' \
     "<VirtualHost *:80>" \
