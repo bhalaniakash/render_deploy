@@ -27,7 +27,12 @@ WORKDIR /app
 
 # Copy only package files, install, then copy rest and build
 COPY package*.json ./
-RUN npm ci --silent
+# Use npm ci when a lockfile is present for reproducible installs, otherwise fall back to npm install
+RUN if [ -f "package-lock.json" ] || [ -f "npm-shrinkwrap.json" ]; then \
+            npm ci --silent; \
+        else \
+            npm install --silent; \
+        fi
 COPY . .
 RUN if [ -f "package.json" ]; then npm run build || npm run production || true; fi
 
