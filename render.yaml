@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: laravel-app
+    env: docker
+    plan: free
+    branch: main
+    healthCheckPath: /
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        fromService: mysql
+      - key: DB_PORT
+        value: 3306
+      - key: DB_DATABASE
+        value: rendorer_deploye
+      - key: DB_USERNAME
+        value: root
+      - key: DB_PASSWORD
+        value: 
+
+databases:
+  - name: mysql
+    plan: free
+    databaseName: rendorer_deploye
+    user: root
