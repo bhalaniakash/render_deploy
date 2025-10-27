@@ -2,8 +2,8 @@
 .git
 .github
 .gitignore
-node_modules
-vendor
+/node_modules
+/vendor
 .env
 .env.*
 storage/*.key

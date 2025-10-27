@@ -34,7 +34,7 @@ RUN if [ -f "package.json" ]; then npm run build || npm run production || true; 
 #############################
 # Final stage (PHP-FPM)
 #############################
-FROM php:8.2-fpm
+FROM php:8.2-apache
 
 # Install system dependencies and PHP extensions commonly needed by Laravel
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -73,3 +73,5 @@ EXPOSE 9000
 
 # Use php-fpm as entrypoint (container runs FPM)
 CMD ["php-fpm"]
+EXPOSE 10000
+CMD ["apache2-foreground"]
