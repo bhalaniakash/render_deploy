@@ -29,8 +29,9 @@ RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoload
 # Copy the rest of the application
 COPY . .
 
-# Ensure storage and bootstrap cache are writable
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache || true
+# Ensure storage/framework subdirectories exist and are writable by the web user
+RUN mkdir -p storage/framework/views storage/framework/sessions storage/framework/cache bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache || true
 
 # Expose port (Render provides a PORT env var; default to 8000)
 EXPOSE 8000

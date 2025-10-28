@@ -17,7 +17,7 @@ services:
       - key: APP_DEBUG
         value: "false"
       - key: APP_URL
-        value: https://your-render-url.onrender.com
+        value: https://render-deploy-tsm2.onrender.com
       # Example placeholders (do NOT store secrets here in the repository):
       # - key: APP_KEY
       #   value: base64:...
