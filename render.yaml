@@ -8,6 +8,8 @@ services:
     dockerfilePath: Dockerfile
     plan: free
     region: oregon
+    # Run migrations during deploy before starting the service
+    releaseCommand: php artisan migrate --force
     # Do not hardcode secrets here. Set these in the Render service settings instead.
     envVars:
       - key: APP_ENV
@@ -16,3 +18,8 @@ services:
         value: "false"
       - key: APP_URL
         value: https://your-render-url.onrender.com
+      # Example placeholders (do NOT store secrets here in the repository):
+      # - key: APP_KEY
+      #   value: base64:...
+      # - key: DATABASE_URL
+      #   value: postgres://USER:PASSWORD@HOST:5432/render_deploy
