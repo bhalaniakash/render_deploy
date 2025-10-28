@@ -1,23 +1,12 @@
-<!doctype html>
-<html lang="en">
+@extends('layouts.app')
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Register</title>
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            padding: 20px;
-        }
-    </style>
-</head>
+@section('title', 'Register')
 
-<body>
-    <h1>Register</h1>
+@section('content')
+    <h2>Create an account</h2>
 
     @if ($errors->any())
-        <div style="color:red">
+        <div class="errors">
             <ul>
                 @foreach ($errors->all() as $err)
                     <li>{{ $err }}</li>
@@ -26,22 +15,22 @@
         </div>
     @endif
 
-    <form method="POST" action="{{ route('register.post') }}">
+    <form method="POST" action="{{ route('register.post') }}" data-validate="password-match">
         @csrf
-        <div>
-            <label>Name</label><br>
+        <div class="field">
+            <label>Name</label>
             <input type="text" name="name" value="{{ old('name') }}" required>
         </div>
-        <div>
-            <label>Email</label><br>
+        <div class="field">
+            <label>Email</label>
             <input type="email" name="email" value="{{ old('email') }}" required>
         </div>
-        <div>
-            <label>Password</label><br>
+        <div class="field">
+            <label>Password</label>
             <input type="password" name="password" required>
         </div>
-        <div>
-            <label>Confirm Password</label><br>
+        <div class="field">
+            <label>Confirm Password</label>
             <input type="password" name="password_confirmation" required>
         </div>
         <div style="margin-top:10px">
@@ -49,7 +38,5 @@
         </div>
     </form>
 
-    <p>Already have an account? <a href="{{ route('login') }}">Login</a></p>
-</body>
-
-</html>
+    <p class="small">Already have an account? <a href="{{ route('login') }}">Login</a></p>
+@endsection

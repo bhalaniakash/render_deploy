@@ -1,29 +1,19 @@
-<!doctype html>
-<html lang="en">
+@extends('layouts.app')
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Dashboard</title>
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            padding: 20px;
-        }
-    </style>
-</head>
+@section('title', 'Dashboard')
 
-<body>
-    <h1>Dashboard</h1>
+@section('topright')
+    <a href="/" class="small">Home</a>
+@endsection
 
-    <p>Welcome, {{ $user->name ?? 'User' }} ({{ $user->email ?? '' }})</p>
+@section('content')
+    <h2>Dashboard</h2>
+
+    <p>Welcome, <strong>{{ $user->name ?? 'User' }}</strong> <span class="small">({{ $user->email ?? '' }})</span></p>
 
     <form method="POST" action="{{ route('logout') }}">
         @csrf
         <button type="submit">Logout</button>
     </form>
 
-    <p><a href="/">Home</a></p>
-</body>
-
-</html>
+@endsection
