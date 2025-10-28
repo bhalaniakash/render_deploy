@@ -1,17 +1,19 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\auth;
+use App\Http\Controllers\AuthController;
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
 Route::get('/', function () {
-    return view('home');
-})->middleware('auth');
+    return view('welcome');
+});
 
-// add routes for authentication
-Route::post('/register', [auth::class, 'register'])->name('register');
-Route::get('/register', [auth::class, 'registerForm']);
-Route::post('/login', [auth::class, 'login'])->name('login');
-Route::get('/login', [auth::class, 'loginForm']);
+// Authentication routes
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+Route::get('/dashboard', [AuthController::class, 'dashboard'])->middleware('auth')->name('dashboard');

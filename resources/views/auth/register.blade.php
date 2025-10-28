@@ -1,34 +1,14 @@
-<html>
+<!doctype html>
+<html lang="en">
+
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Register</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 50px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 15px;
-            box-sizing: border-box;
-        }
-
-        .btn-primary {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 20px;
         }
     </style>
 </head>
@@ -36,52 +16,40 @@
 <body>
     <h1>Register</h1>
 
-    {{-- Show all validation errors (general) --}}
     @if ($errors->any())
-        <div class="text-danger">
+        <div style="color:red">
             <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
+                @foreach ($errors->all() as $err)
+                    <li>{{ $err }}</li>
                 @endforeach
             </ul>
         </div>
     @endif
-    <form method="POST" action="{{ route('register') }}">
+
+    <form method="POST" action="{{ route('register.post') }}">
         @csrf
-        <div class="mb-3">
-            <label for="name" class="form-label">Name</label>
-            <input type="text" class="form-control" id="name" name="name" value="{{ old('name') }}" required>
-            @error('name')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
-        <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input type="email" class="form-control" id="email" name="email" value="{{ old('email') }}"
-                required>
-            @error('email')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Password</label>
-            <input type="password" class="form-control" id="password" name="password" required>
-            @error('password')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
+        <div>
+            <label>Name</label><br>
+            <input type="text" name="name" value="{{ old('name') }}" required>
         </div>
         <div>
-            <label for="password_confirmation" class="form-label">Confirm Password</label>
-            <input type="password" class="form-control" id="password_confirmation" name="password_confirmation"
-                required>
-            @error('password_confirmation')
-                <div class="text-danger">{{ $message }}</div>
-            @enderror
+            <label>Email</label><br>
+            <input type="email" name="email" value="{{ old('email') }}" required>
         </div>
-        <button type="submit" class="btn btn-primary">Register</button>
-        <a href="{{ route('login') }}">Already have an account? Login</a>
+        <div>
+            <label>Password</label><br>
+            <input type="password" name="password" required>
+        </div>
+        <div>
+            <label>Confirm Password</label><br>
+            <input type="password" name="password_confirmation" required>
+        </div>
+        <div style="margin-top:10px">
+            <button type="submit">Register</button>
+        </div>
     </form>
 
+    <p>Already have an account? <a href="{{ route('login') }}">Login</a></p>
 </body>
 
 </html>

@@ -1,37 +1,47 @@
+<!doctype html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-      /* Custom styles can go here */
-      body {
-          @apply bg-white text-gray-800;
-      }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            padding: 20px;
+        }
     </style>
 </head>
+
 <body>
-  <h1 class="text-3xl font-bold underline">
-    Welcome to the login
-  </h1>
-<form method="post" action="login">
-  @csrf
-  <div class="mb-3">
-    <label for="exampleInputEmail1" class="form-label">Email address</label>
-    <input type="email" class="form-control" id="exampleInputEmail1" name="email" aria-describedby="emailHelp">
-    <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
-  </div>
-  <div class="mb-3">
-    <label for="exampleInputPassword1" class="form-label">Password</label>
-    <input type="password" class="form-control" id="exampleInputPassword1" name="password">
-  </div>
-  <div class="mb-3 form-check">
-    <input type="checkbox" class="form-check-input" id="exampleCheck1">
-    <label class="form-check-label" for="exampleCheck1">Check me out</label>
-  </div>
-  <button type="submit" class="btn btn-primary">Submit</button>
-</form>
+    <h1>Login</h1>
+
+    @if ($errors->any())
+        <div style="color:red">
+            <ul>
+                @foreach ($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('login.post') }}">
+        @csrf
+        <div>
+            <label>Email</label><br>
+            <input type="email" name="email" value="{{ old('email') }}" required>
+        </div>
+        <div>
+            <label>Password</label><br>
+            <input type="password" name="password" required>
+        </div>
+        <div style="margin-top:10px">
+            <button type="submit">Login</button>
+        </div>
+    </form>
+
+    <p>Don't have an account? <a href="{{ route('register') }}">Register</a></p>
 </body>
+
 </html>

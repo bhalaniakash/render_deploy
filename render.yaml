@@ -1,32 +1,18 @@
+# Render manifest for deploying this repo as a Docker web service.
+# Set environment variables (DB, APP_KEY, etc.) in the Render dashboard or replace below with secret names.
+
 services:
   - type: web
     name: laravel-app
     env: docker
+    dockerfilePath: Dockerfile
     plan: free
-    branch: main
-    healthCheckPath: /
+    region: oregon
+    # Do not hardcode secrets here. Set these in the Render service settings instead.
     envVars:
       - key: APP_ENV
         value: production
       - key: APP_DEBUG
-        value: false
-      - key: APP_KEY
-        generateValue: true
-      - key: DB_CONNECTION
-        value: mysql
-      - key: DB_HOST
-        fromDatabase: mysql
-      - key: DB_PORT
-        value: 3306
-      - key: DB_DATABASE
-        fromDatabase: mysql
-      - key: DB_USERNAME
-        fromDatabase: mysql
-      - key: DB_PASSWORD
-        fromDatabase: mysql
-
-databases:
-  - name: mysql
-    plan: free
-    databaseName: hungerhop_prod
-    user: hungerhop_user
+        value: "false"
+      - key: APP_URL
+        value: https://your-render-url.onrender.com

@@ -1,47 +1,45 @@
-# Stage 1: Composer
-FROM composer:2 AS vendor
-WORKDIR /app
-COPY composer.json composer.lock ./
-# Install dependencies without running Composer scripts (scripts may call artisan before app files exist)
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --no-scripts
-COPY . .
-RUN composer dump-autoload --optimize
+# Simple Dockerfile for deploying this Laravel app on Render using Docker
+# This image uses PHP CLI and runs artisan serve. For production consider using nginx+php-fpm.
 
-# Stage 2: Node (optional)
-FROM node:18-alpine AS node_builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm install --silent
-COPY . .
-RUN npm run build || npm run production || true
-
-# Stage 3: PHP + Apache
-FROM php:8.2-apache
-RUN apt-get update && apt-get install -y git unzip zip libzip-dev libpng-dev libonig-dev libxml2-dev curl \
-    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath zip xml \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --from=vendor /app /var/www/html
-COPY --from=node_builder /app/public /var/www/html/public
-RUN a2enmod rewrite headers && \
-    printf '%s\n' \
-    "<VirtualHost *:80>" \
-    "    ServerAdmin webmaster@localhost" \
-    "    DocumentRoot /var/www/html/public" \
-    "    DirectoryIndex index.php index.html" \
-    "    <Directory /var/www/html/public>" \
-    "        Options Indexes FollowSymLinks" \
-    "        AllowOverride All" \
-    "        Require all granted" \
-    "    </Directory>" \
-    "    ErrorLog \${APACHE_LOG_DIR}/error.log" \
-    "    CustomLog \${APACHE_LOG_DIR}/access.log combined" \
-    "</VirtualHost>" \
-    > /etc/apache2/sites-available/000-default.conf
-
-
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/public || true
+FROM php:8.2-cli
 
 WORKDIR /var/www/html
-EXPOSE 80
-CMD ["apache2-foreground"]
+
+# Install system dependencies and PHP extensions (including PostgreSQL)
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    zip \
+    libpq-dev \
+    libzip-dev \
+    libonig-dev \
+    libxml2-dev \
+    curl \
+    && docker-php-ext-install pdo pdo_pgsql pgsql zip bcmath pcntl xml opcache \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Copy composer files first (leverages Docker layer cache)
+COPY composer.json composer.lock ./
+
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader || true
+
+# Copy the rest of the application
+COPY . .
+
+# Ensure storage and bootstrap cache are writable
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache || true
+
+# Expose port (Render provides a PORT env var; default to 8000)
+EXPOSE 8000
+
+# Use the PORT env var if provided by Render; fall back to 8000
+ENV PORT=8000
+
+# Generate optimized autoload files (if composer install ran previously this is okay)
+RUN composer dump-autoload --optimize || true
+
+# Use artisan serve for a simple deployment. For production, swap to nginx+php-fpm.
+CMD ["sh", "-c", "php artisan migrate --force || true; php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
