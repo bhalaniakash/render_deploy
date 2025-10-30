@@ -1,1063 +1,1810 @@
-@extends('layouts.app')@extends('layouts.app')
+@extends('layouts.app')@extends('layouts.app')@extends('layouts.app')
 
 
 
-@section('title', 'Finance Dashboard')@section('title', 'Finance Dashboard')
+@section('title', 'Finance Dashboard')
 
-@section('page-title', 'Financial Overview')@section('page-title', 'Financial Overview')
+@section('page-title', 'Financial Overview')
 
-@section('subtitle', 'Track your income, expenses, and balances')@section('subtitle', 'Track your income, expenses, and balances')
+@section('subtitle', 'Track your income, expenses, and balances')@section('title', 'Finance Dashboard')@section('title', 'Finance Dashboard')
 
 
 
-@section('content')@section('content')
+@section('content')@section('page-title', 'Financial Overview')@section('page-title', 'Financial Overview')
 
-    <div class="animate-fade-in">    <div class="animate-fade-in">
+<div class="animate-fade-in">
 
-        @if (session('success'))        @if (session('success'))
+    @if (session('success'))@section('subtitle', 'Track your income, expenses, and balances')@section('subtitle', 'Track your income, expenses, and
 
-            <script>            <script>
+        <script>balances')
 
-                document.addEventListener('DOMContentLoaded', () => {                document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('DOMContentLoaded', () => {
 
-                    showToast(@json(session('success')), 'success');                    showToast(@json(session('success')), 'success');
+                showToast(@json(session('success')), 'success');
 
-                });                });
+            });
 
-            </script>            </script>
+        </script>@section('content')@section('content')
 
-        @endif        @endif
+    @endif
 
+<div class="animate-fade-in">
 
+    @if ($errors->any())    <div class="animate-fade-in">
 
-        @if ($errors->any())        @if ($errors->any())
+        <div class="errors">
 
-            <div class="errors">            <script>
+            <ul>        @if (session('success'))
 
-                <ul>                // Robustly pick the visible control when there are duplicate inputs
+                @foreach ($errors->all() as $err)            @if (session('success'))
 
-                    @foreach ($errors->all() as $err)                // (mobile + desktop variants). For each named control group we enable
+                    <li>{{ $err }}</li>
 
-                        <li>{{ $err }}</li>                // only the visible instance so browser validation targets a focusable
+                @endforeach                <script>
 
-                    @endforeach                // element. Hidden inputs (like CSRF token) are left untouched.
+            </ul>                    < script >
 
-                </ul>                (function() {
+        </div>
 
-            </div>                    function isVisible(el) {
+    @endif                        document.addEventListener('DOMContentLoaded', () => {
 
-        @endif                        if (!el) return false;
+                            document.addEventListener('DOMContentLoaded', () => {
 
-                        if (el.type === 'hidden') return false; // treat hidden as not visible for selection
+    <!-- Quick Stats -->
 
-        <!-- Quick Stats -->                        const style = window.getComputedStyle(el);
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">                                showToast(@json(session('success')), 'success');
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">                        if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return false;
+        <div class="stats-card rounded-xl p-4 shadow-lg">                                showToast(@json(session('success')), 'success');
 
-            <div class="stats-card rounded-xl p-4 shadow-lg">                        const rects = el.getClientRects();
+            <div class="flex items-center justify-between">
 
-                <div class="flex items-center justify-between">                        return rects.length > 0 && rects[0].width > 0 && rects[0].height > 0;
+                <div>                            });
 
-                    <div>                    }
+                    <p class="text-gray-600 text-xs font-medium">Total Balance</p>                        });
 
-                        <p class="text-gray-600 text-xs font-medium">Total Balance</p>
+                    <p class="text-xl font-bold text-gray-800">₹{{ number_format($finalBalance, 2) }}</p>                </script>
 
-                        <p class="text-xl font-bold text-gray-800">₹{{ number_format($finalBalance, 2) }}</p>                    function syncFormControls(form) {
+                </div>                </script>
 
-                    </div>                        if (!form) return;
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
 
-                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">                        const named = {};
+                    <i class="fas fa-wallet text-blue-600 text-lg"></i>            @endif
 
-                        <i class="fas fa-wallet text-blue-600 text-lg"></i>                        form.querySelectorAll('input[name],select[name],textarea[name]').forEach(el => {
-
-                    </div>                            // never touch true hidden inputs (csrf etc.)
-
-                </div>                            if (el.type === 'hidden') return;
-
-            </div>                            if (el.matches('button,input[type="submit"],input[type="button"]')) return;
-
-                            const name = el.getAttribute('name');
-
-            <div class="stats-card rounded-xl p-4 shadow-lg" style="border-left-color: #10b981;">                            if (!name) return;
-
-                <div class="flex items-center justify-between">                            named[name] = named[name] || [];
-
-                    <div>                            named[name].push(el);
-
-                        <p class="text-gray-600 text-xs font-medium">Total Income</p>                        });
-
-                        <p class="text-xl font-bold text-gray-800">₹{{ number_format($totalIncome, 2) }}</p>
-
-                    </div>                        Object.keys(named).forEach(name => {
-
-                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">                            const group = named[name];
-
-                        <i class="fas fa-arrow-up text-green-600 text-lg"></i>                            // find a visible control; if none visible, use the first one
-
-                    </div>                            const visible = group.find(isVisible) || group[0];
-
-                </div>                            group.forEach(el => {
-
-            </div>                                if (el === visible) {
-
-                                    el.removeAttribute('disabled');
-
-            <div class="stats-card rounded-xl p-4 shadow-lg" style="border-left-color: #ef4444;">                                } else {
-
-                <div class="flex items-center justify-between">                                    el.setAttribute('disabled', 'disabled');
-
-                    <div>                                }
-
-                        <p class="text-gray-600 text-xs font-medium">Total Expense</p>                            });
-
-                        <p class="text-xl font-bold text-gray-800">₹{{ number_format($totalExpense, 2) }}</p>                        });
-
-                    </div>                    }
-
-                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-
-                        <i class="fas fa-arrow-down text-red-600 text-lg"></i>                    const addForm = document.getElementById('add-transaction-form');
-
-                    </div>                    if (addForm) {
-
-                </div>                        // initial sync
-
-            </div>                        syncFormControls(addForm);
-
-
-
-            <div class="stats-card rounded-xl p-4 shadow-lg" style="border-left-color: #f59e0b;">                        // re-sync on resize/orientation change (debounced)
-
-                <div class="flex items-center justify-between">                        let t = null;
-
-                    <div>                        window.addEventListener('resize', function() {
-
-                        <p class="text-gray-600 text-xs font-medium">Net Savings</p>                            clearTimeout(t);
-
-                        <p class="text-xl font-bold text-gray-800">₹{{ number_format($totalIncome - $totalExpense, 2) }}</p>                            t = setTimeout(function() {
-
-                    </div>                                syncFormControls(addForm);
-
-                    <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">                            }, 120);
-
-                        <i class="fas fa-piggy-bank text-yellow-600 text-lg"></i>                        });
-
-                    </div>                        window.addEventListener('orientationchange', function() {
-
-                </div>                            setTimeout(function() {
-
-            </div>                                syncFormControls(addForm);
-
-        </div>                            }, 150);
-
-                        });
-
-        <!-- Add Entry Form -->                    }
-
-        <div class="glass-effect rounded-xl p-4 md:p-6 mb-6 card-hover">                })();
-
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">            </script>
-
-                <i class="fas fa-plus-circle text-primary mr-2"></i>            <div>
-
-                Add New Transaction                <p class="text-gray-600 text-xs font-medium">Net Savings</p>
-
-            </h3>                <p class="text-xl font-bold text-gray-800">₹{{ number_format($totalIncome - $totalExpense, 2) }}</p>
+                </div>        @endif
 
             </div>
 
-            <form id="add-transaction-form" method="POST" action="{{ route('finances.store') }}" class="space-y-4">            <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+        </div>
 
-                @csrf                <i class="fas fa-piggy-bank text-yellow-600 text-lg"></i>
 
-                <div id="form-error" style="display:none" class="errors"></div>            </div>
+
+        <div class="stats-card rounded-xl p-4 shadow-lg" style="border-left-color: #10b981;">        @if ($errors->any())
+
+            <div class="flex items-center justify-between">            @if ($errors->any())
+
+                <div>
+
+                    <p class="text-gray-600 text-xs font-medium">Total Income</p>                <div class="errors">
+
+                    <p class="text-xl font-bold text-gray-800">₹{{ number_format($totalIncome, 2) }}</p>                    <script>
+
+                </div>                        < ul > // Robustly pick the visible control when there are duplicate inputs
+
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+
+                    <i class="fas fa-arrow-up text-green-600 text-lg"></i>                            @foreach ($errors->all() as $err) // (mobile + desktop variants). For each named control group we enable
+
+                </div>
+
+            </div>                                <
+
+        </div>                                li > {{ $err }} < /li>                / /
+
+                                    only the visible instance so browser validation targets a focusable
+
+        <div class="stats-card rounded-xl p-4 shadow-lg" style="border-left-color: #ef4444;">                            @endforeach // element. Hidden inputs (like CSRF token) are left untouched.
+
+            <div class="flex items-center justify-between">
+
+                <div>                            <
+
+                    <p class="text-gray-600 text-xs font-medium">Total Expense</p>                            /ul>                (function() {
+
+                    <p class="text-xl font-bold text-gray-800">₹{{ number_format($totalExpense, 2) }}</p>
+
+                </div>                            <
+
+                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">                            /div>                    function isVisible(el) {
+
+                    <i class="fas fa-arrow-down text-red-600 text-lg"></i>                        @endif
+
+                </div>                        if (!el) return false;
+
+            </div>
+
+        </div>                        if (el.type === 'hidden') return false; // treat hidden as not visible for selection
+
+
+
+        <div class="stats-card rounded-xl p-4 shadow-lg" style="border-left-color: #f59e0b;">                        <
+
+            <div class="flex items-center justify-between">                        !--Quick Stats-- >
+
+                <div>                        const style = window.getComputedStyle(el);
+
+                    <p class="text-gray-600 text-xs font-medium">Net Savings</p>
+
+                    <p class="text-xl font-bold text-gray-800">₹{{ number_format($totalIncome - $totalExpense, 2) }}</p>                        <
+
+                </div>                        div class = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8" >
+
+                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">                        if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return false;
+
+                    <i class="fas fa-piggy-bank text-yellow-600 text-lg"></i>
+
+                </div>                        <
+
+            </div>                        div class = "stats-card rounded-xl p-4 shadow-lg" >
+
+        </div>                        const rects = el.getClientRects();
 
     </div>
 
-                <!-- Mobile Layout (Stacked) -->    </div>
+                        <
 
-                <div class="block md:hidden space-y-4">    </div>
+    <!-- Add Entry Form -->                        div class = "flex items-center justify-between" >
 
-                    <div class="grid grid-cols-1 gap-4">
+    <div class="glass-effect rounded-xl p-4 md:p-6 mb-6 card-hover">                        return rects.length > 0 && rects[0].width > 0 && rects[0].height > 0;
 
-                        <div>    <!-- Add Entry Form -->
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
 
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>    <div class="glass-effect rounded-xl p-4 md:p-6 mb-6 card-hover">
+            <i class="fas fa-plus-circle text-primary mr-2"></i>                        <
 
-                            <input type="date" name="date" max="{{ now()->toDateString() }}"        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            Add New Transaction                        div >
 
-                                value="{{ old('date', now()->toDateString()) }}"            <i class="fas fa-plus-circle text-primary mr-2"></i>
+        </h3>                        }
 
-                                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"            Add New Transaction
 
-                                required>        </h3>
 
-                        </div>
+        <form id="add-transaction-form" method="POST" action="{{ route('finances.store') }}" class="space-y-4">                        <
 
-        <form id="add-transaction-form" method="POST" action="{{ route('finances.store') }}" class="space-y-4">
+            @csrf                        p class = "text-gray-600 text-xs font-medium" > Total Balance < /p>
 
-                        <div>            @csrf
+            <div id="form-error" style="display:none" class="errors"></div>
 
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>            <div id="form-error" style="display:none" class="errors"></div>
+                            <
 
-                            <input type="text" name="description" value="{{ old('description') }}"
+            <!-- Mobile Layout (Stacked) -->                            p class = "text-xl font-bold text-gray-800" > ₹{{ number_format($finalBalance, 2) }} <
 
-                                placeholder="e.g. Lunch at Restaurant"            <!-- Mobile Layout (Stacked) -->
+            <div class="block md:hidden space-y-4">                            /p>                    function syncFormControls(form) {
 
-                                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"            <div class="block md:hidden space-y-4">
+                <div class="grid grid-cols-1 gap-4">
 
-                                required>                <div class="grid grid-cols-1 gap-4">
+                    <div>                            <
 
-                        </div>                    <div>
-
-                    </div>                        <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>                            /div>                        if (!form) return;
 
                         <input type="date" name="date" max="{{ now()->toDateString() }}"
 
-                    <div class="grid grid-cols-2 gap-4">                            value="{{ old('date', now()->toDateString()) }}"
+                            value="{{ old('date', now()->toDateString()) }}"                            <
 
-                        <div>                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
+                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"                            div class = "w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center" >
 
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>                            required>
+                            required>                            const named = {};
 
-                            <select name="method"                    </div>
+                    </div>
 
-                                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
+                        <
 
-                                required>                    <div>
+                    <div>                        i class = "fas fa-wallet text-blue-600 text-lg" > <
 
-                                <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>💵 Cash</option>                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>                        /i>                        form.querySelectorAll('input[name],select[name],textarea[name]').forEach(el => {
 
-                                <option value="gpay" {{ old('method') == 'gpay' ? 'selected' : '' }}>📱 GPay</option>                        <input type="text" name="description" value="{{ old('description') }}"
+                        <input type="text" name="description" value="{{ old('description') }}"
 
-                            </select>                            placeholder="e.g. Lunch at Restaurant"
+                            placeholder="e.g. Lunch at Restaurant"                        <
 
-                        </div>                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
+                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"                        /div>                            / / never touch true hidden inputs(csrf etc.)
 
                             required>
 
-                        <div>                    </div>
+                    </div>                            <
 
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>                </div>
+                </div>                            /div>                            if (el.type === 'hidden') return;
 
-                            <select name="category"
 
-                                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">                <div class="grid grid-cols-2 gap-4">
 
-                                <option value="">Select</option>                    <div>
+                <div class="grid grid-cols-2 gap-4">                            <
 
-                                <option value="Food" {{ old('category') == 'Food' ? 'selected' : '' }}>🍔 Food</option>                        <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>
+                    <div>                            /div>                            if (el.matches('button,input[type="submit"],input[type="button"]')) return;
 
-                                <option value="Shopping" {{ old('category') == 'Shopping' ? 'selected' : '' }}>🛍️ Shopping</option>                        <select name="method"
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>
 
-                                <option value="Transport" {{ old('category') == 'Transport' ? 'selected' : '' }}>🚗 Transport</option>                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
+                        <select name="method"                        const name = el.getAttribute('name');
 
-                                <option value="Entertainment" {{ old('category') == 'Entertainment' ? 'selected' : '' }}>🎬 Entertainment</option>                            required>
+                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
 
-                                <option value="Bills" {{ old('category') == 'Bills' ? 'selected' : '' }}>📄 Bills</option>                            <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>💵 Cash</option>
+                            required>                        <
 
-                                <option value="Salary" {{ old('category') == 'Salary' ? 'selected' : '' }}>💰 Salary</option>                            <option value="gpay" {{ old('method') == 'gpay' ? 'selected' : '' }}>📱 GPay</option>
+                            <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>💵 Cash</option>                        div class = "stats-card rounded-xl p-4 shadow-lg"
 
-                                <option value="Other" {{ old('category') == 'Other' ? 'selected' : '' }}>📦 Other</option>                        </select>
+                            <option value="gpay" {{ old('method') == 'gpay' ? 'selected' : '' }}>📱 GPay</option>                        style = "border-left-color: #10b981;" >
 
-                            </select>                    </div>
+                        </select>                            if (!name) return;
 
-                        </div>
+                    </div>
 
-                    </div>                    <div>
+                        <
+
+                    <div>                        div class = "flex items-center justify-between" > named[name] = named[name] || [];
 
                         <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
 
-                    <div class="grid grid-cols-2 gap-4">                        <select name="category"
+                        <select name="category"                        <
 
-                        <div>                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">                        div > named[name].push(el);
 
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Income</label>                            <option value="">Select</option>
+                            <option value="">Select</option>
 
-                            <input type="number" step="0.01" name="income" value="{{ old('income') }}"                            <option value="Food" {{ old('category') == 'Food' ? 'selected' : '' }}>🍔 Food</option>
+                            <option value="Food" {{ old('category') == 'Food' ? 'selected' : '' }}>🍔 Food</option>                        <
 
-                                placeholder="0.00"                            <option value="Shopping" {{ old('category') == 'Shopping' ? 'selected' : '' }}>🛍️ Shopping
+                            <option value="Shopping" {{ old('category') == 'Shopping' ? 'selected' : '' }}>🛍️ Shopping</option>                        p class = "text-gray-600 text-xs font-medium" > Total Income < /p>                        });
 
-                                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">                            </option>
+                            <option value="Transport" {{ old('category') == 'Transport' ? 'selected' : '' }}>🚗 Transport</option>
 
-                        </div>                            <option value="Transport" {{ old('category') == 'Transport' ? 'selected' : '' }}>🚗
+                            <option value="Entertainment" {{ old('category') == 'Entertainment' ? 'selected' : '' }}>🎬 Entertainment</option>                            <
 
-                                Transport</option>
+                            <option value="Bills" {{ old('category') == 'Bills' ? 'selected' : '' }}>📄 Bills</option>                            p class = "text-xl font-bold text-gray-800" > ₹{{ number_format($totalIncome, 2) }} < /p>
 
-                        <div>                            <option value="Entertainment" {{ old('category') == 'Entertainment' ? 'selected' : '' }}>🎬
+                            <option value="Salary" {{ old('category') == 'Salary' ? 'selected' : '' }}>💰 Salary</option>
 
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Expense</label>                                Entertainment</option>
+                            <option value="Other" {{ old('category') == 'Other' ? 'selected' : '' }}>📦 Other</option>                            <
 
-                            <input type="number" step="0.01" name="expense" value="{{ old('expense') }}"                            <option value="Bills" {{ old('category') == 'Bills' ? 'selected' : '' }}>📄 Bills</option>
-
-                                placeholder="0.00"                            <option value="Salary" {{ old('category') == 'Salary' ? 'selected' : '' }}>💰 Salary
-
-                                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">                            </option>
-
-                        </div>                            <option value="Other" {{ old('category') == 'Other' ? 'selected' : '' }}>📦 Other</option>
-
-                    </div>                        </select>
+                        </select>                            /div>                        Object.keys(named).forEach(name => {
 
                     </div>
 
-                    <div>                </div>
+                </div>                            <
 
-                        <button type="submit"
+                            div class = "w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center" >
 
-                            class="w-full btn-primary text-white py-2 px-4 rounded-lg font-semibold transition-all text-sm">                <div class="grid grid-cols-2 gap-4">
-
-                            <i class="fas fa-plus mr-1"></i> Add Transaction                    <div>
-
-                        </button>                        <label class="block text-sm font-medium text-gray-700 mb-1">Income</label>
-
-                    </div>                        <input type="number" step="0.01" name="income" value="{{ old('income') }}" placeholder="0.00"
-
-                </div>                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
-
-                    </div>
-
-                <!-- Desktop Layout (Grid) -->
-
-                <div class="hidden md:grid md:grid-cols-7 gap-3 items-end">                    <div>
-
-                    <div>                        <label class="block text-sm font-medium text-gray-700 mb-1">Expense</label>
-
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>                        <input type="number" step="0.01" name="expense" value="{{ old('expense') }}" placeholder="0.00"
-
-                        <input type="date" name="date" max="{{ now()->toDateString() }}"                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
-
-                            value="{{ old('date', now()->toDateString()) }}"                    </div>
-
-                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"                </div>
-
-                            required>
-
-                    </div>                <div>
-
-                    <button type="submit"
-
-                    <div class="col-span-2">                        class="w-full btn-primary text-white py-2 px-4 rounded-lg font-semibold transition-all text-sm">
-
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>                        <i class="fas fa-plus mr-1"></i> Add Transaction
-
-                        <input type="text" name="description" value="{{ old('description') }}"                    </button>
-
-                            placeholder="e.g. Lunch at Restaurant"                </div>
-
-                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"            </div>
-
-                            required>
-
-                    </div>            <!-- Desktop Layout (Grid) -->
-
-            <div class="hidden md:grid md:grid-cols-7 gap-3 items-end">
-
-                    <div>                <div>
-
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>                    <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-
-                        <select name="method"                    <input type="date" name="date" max="{{ now()->toDateString() }}"
-
-                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"                        value="{{ old('date', now()->toDateString()) }}"
-
-                            required>                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
-
-                            <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>💵 Cash</option>                        required>
-
-                            <option value="gpay" {{ old('method') == 'gpay' ? 'selected' : '' }}>📱 GPay</option>                </div>
-
-                        </select>
-
-                    </div>                <div class="col-span-2">
-
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-
-                    <div>                    <input type="text" name="description" value="{{ old('description') }}"
-
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>                        placeholder="e.g. Lunch at Restaurant"
-
-                        <select name="category"                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
-
-                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">                        required>
-
-                            <option value="">Select</option>                </div>
-
-                            <option value="Food" {{ old('category') == 'Food' ? 'selected' : '' }}>🍔 Food</option>
-
-                            <option value="Shopping" {{ old('category') == 'Shopping' ? 'selected' : '' }}>🛍️ Shopping</option>                <div>
-
-                            <option value="Transport" {{ old('category') == 'Transport' ? 'selected' : '' }}>🚗 Transport</option>                    <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>
-
-                            <option value="Entertainment" {{ old('category') == 'Entertainment' ? 'selected' : '' }}>🎬 Entertainment</option>                    <select name="method"
-
-                            <option value="Bills" {{ old('category') == 'Bills' ? 'selected' : '' }}>📄 Bills</option>                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
-
-                            <option value="Salary" {{ old('category') == 'Salary' ? 'selected' : '' }}>💰 Salary</option>                        required>
-
-                            <option value="Other" {{ old('category') == 'Other' ? 'selected' : '' }}>📦 Other</option>                        <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>💵 Cash</option>
-
-                        </select>                        <option value="gpay" {{ old('method') == 'gpay' ? 'selected' : '' }}>📱 GPay</option>
-
-                    </div>                    </select>
-
-                </div>
+                <div class="grid grid-cols-2 gap-4">                            const group = named[name];
 
                     <div>
 
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Income</label>                <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Income</label>                        <
 
-                        <input type="number" step="0.01" name="income" value="{{ old('income') }}"                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                        <input type="number" step="0.01" name="income" value="{{ old('income') }}"                        i class = "fas fa-arrow-up text-green-600 text-lg" > < /i>                            / / find a visible control;
 
-                            placeholder="0.00"                    <select name="category"
+                            placeholder="0.00"                        if none visible, use the first one
 
-                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
 
-                    </div>                        <option value="">Select</option>
+                    </div>                            <
 
-                        <option value="Food" {{ old('category') == 'Food' ? 'selected' : '' }}>🍔 Food</option>
-
-                    <div>                        <option value="Shopping" {{ old('category') == 'Shopping' ? 'selected' : '' }}>🛍️ Shopping
-
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Expense</label>                        </option>
-
-                        <input type="number" step="0.01" name="expense" value="{{ old('expense') }}"                        <option value="Transport" {{ old('category') == 'Transport' ? 'selected' : '' }}>🚗 Transport
-
-                            placeholder="0.00"                        </option>
-
-                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">                        <option value="Entertainment" {{ old('category') == 'Entertainment' ? 'selected' : '' }}>🎬
-
-                    </div>                            Entertainment</option>
-
-                        <option value="Bills" {{ old('category') == 'Bills' ? 'selected' : '' }}>📄 Bills</option>
-
-                    <div>                        <option value="Salary" {{ old('category') == 'Salary' ? 'selected' : '' }}>💰 Salary</option>
-
-                        <button type="submit"                        <option value="Other" {{ old('category') == 'Other' ? 'selected' : '' }}>📦 Other</option>
-
-                            class="w-full btn-primary text-white py-2 px-3 rounded-lg font-semibold transition-all text-sm">                    </select>
-
-                            <i class="fas fa-plus mr-1"></i> Add                </div>
-
-                        </button>
-
-                    </div>                <div>
-
-                </div>                    <label class="block text-sm font-medium text-gray-700 mb-1">Income</label>
-
-            </form>                    <input type="number" step="0.01" name="income" value="{{ old('income') }}" placeholder="0.00"
-
-        </div>                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
-
-                </div>
-
-        <!-- Opening Balance Card -->
-
-        <div class="glass-effect rounded-xl p-4 md:p-6 mb-6 card-hover">                <div>
-
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">                    <label class="block text-sm font-medium text-gray-700 mb-1">Expense</label>
-
-                <i class="fas fa-balance-scale text-primary mr-2"></i>                    <input type="number" step="0.01" name="expense" value="{{ old('expense') }}"
-
-                Set Opening Balance                        placeholder="0.00"
-
-            </h3>                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
-
-                </div>
-
-            <form method="POST" action="{{ route('finances.opening') }}"
-
-                class="space-y-3 md:space-y-0 md:flex md:items-end md:gap-4">                <div>
-
-                @csrf                    <button type="submit"
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:flex-1">                        class="w-full btn-primary text-white py-2 px-3 rounded-lg font-semibold transition-all text-sm">
-
-                    <div>                        <i class="fas fa-plus mr-1"></i> Add
-
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>                    </button>
-
-                        <input type="number" step="0.01" name="amount" placeholder="0.00"                </div>
-
-                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">            </div>
-
-                    </div>        </form>
-
-    </div>
+                            /div>                            const visible = group.find(isVisible) || group[0];
 
                     <div>
 
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>    <!-- Opening Balance Card -->
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Expense</label>                            <
 
-                        <select name="method"    <div class="glass-effect rounded-xl p-4 md:p-6 mb-6 card-hover">
+                        <input type="number" step="0.01" name="expense" value="{{ old('expense') }}"                            /div>                            group.forEach(el => {
 
-                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                            placeholder="0.00"
 
-                            required>            <i class="fas fa-balance-scale text-primary mr-2"></i>
+                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">                            <
 
-                            <option value="cash">💵 Cash</option>            Set Opening Balance
+                    </div>                            /div>                                if (el === visible) {
 
-                            <option value="gpay">📱 GPay</option>        </h3>
+                </div>
 
-                        </select>
+                        el.removeAttribute('disabled');
 
-                    </div>        <form method="POST" action="{{ route('finances.opening') }}"
+                <div>
 
-            class="space-y-3 md:space-y-0 md:flex md:items-end md:gap-4">
+                    <button type="submit"                        <
 
-                    <div class="md:flex md:items-end">            @csrf
+                        class="w-full btn-primary text-white py-2 px-4 rounded-lg font-semibold transition-all text-sm">                        div class = "stats-card rounded-xl p-4 shadow-lg"
 
-                        <button type="submit"            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:flex-1">
+                        <i class="fas fa-plus mr-1"></i> Add Transaction                        style = "border-left-color: #ef4444;" >
 
-                            class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-semibold transition-all text-sm">                <div>
+                    </button>                        }
 
-                            <i class="fas fa-save mr-1"></i>Set Balance                    <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-
-                        </button>                    <input type="number" step="0.01" name="amount" placeholder="0.00"
-
-                    </div>                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
-
-                </div>                </div>
-
-            </form>
-
-            <p class="text-gray-600 text-xs mt-3">                <div>
-
-                💡 Set opening balance (positive for income, negative for expense)                    <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>
-
-            </p>                    <select name="method"
-
-        </div>                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
-
-                        required>
-
-        <!-- Transactions Table -->                        <option value="cash">💵 Cash</option>
-
-        <div class="glass-effect rounded-xl p-4 md:p-6 card-hover">                        <option value="gpay">📱 GPay</option>
-
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">                    </select>
-
-                <h3 class="text-lg font-semibold text-gray-800 flex items-center mb-2 sm:mb-0">                </div>
-
-                    <i class="fas fa-list-alt text-primary mr-2"></i>
-
-                    Transaction History                <div class="md:flex md:items-end">
-
-                </h3>                    <button type="submit"
-
-                <div class="text-sm text-gray-600">                        class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-semibold transition-all text-sm">
-
-                    Total Records: {{ $finances->count() }}                        <i class="fas fa-save mr-1"></i>Set Balance
-
-                </div>                    </button>
-
-            </div>                </div>
+                </div>                        else {
 
             </div>
 
-            @if ($finances->count() > 0)        </form>
+                            <
 
-                <div class="overflow-x-auto rounded-lg">        <p class="text-gray-600 text-xs mt-3">
+            <!-- Desktop Layout (Grid) -->                            div class = "flex items-center justify-between" > el.setAttribute('disabled', 'disabled');
 
-                    <table class="w-full min-w-full">            💡 Set opening balance (positive for income, negative for expense)
+            <div class="hidden md:grid md:grid-cols-7 gap-3 items-end">
 
-                        <thead>        </p>
+                <div>                            <
 
-                            <tr class="bg-gray-50/80">    </div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>                            div >
 
-                                <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
+                    <input type="date" name="date" max="{{ now()->toDateString() }}"                        }
 
-                                <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Description</th>    <!-- Transactions Table -->
+                        value="{{ old('date', now()->toDateString()) }}"
 
-                                <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Method</th>    <div class="glass-effect rounded-xl p-4 md:p-6 card-hover">
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"                        <
 
-                                <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Category</th>        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+                        required>                        p class = "text-gray-600 text-xs font-medium" > Total Expense < /p>                            });
 
-                                <th class="px-3 py-2 text-right text-xs font-semibold text-green-600 uppercase tracking-wider">Income</th>            <h3 class="text-lg font-semibold text-gray-800 flex items-center mb-2 sm:mb-0">
+                </div>
 
-                                <th class="px-3 py-2 text-right text-xs font-semibold text-red-600 uppercase tracking-wider">Expense</th>                <i class="fas fa-list-alt text-primary mr-2"></i>
+                            <
 
-                                <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Cash Bal</th>                Transaction History
+                <div class="col-span-2">                            p class = "text-xl font-bold text-gray-800" > ₹{{ number_format($totalExpense, 2) }} <
 
-                                <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">GPay Bal</th>            </h3>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>                            /p>                        });
 
-                                <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Bal</th>            <div class="text-sm text-gray-600">
+                    <input type="text" name="description" value="{{ old('description') }}"
 
-                                <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>                Total Records: {{ $finances->count() }}
+                        placeholder="e.g. Lunch at Restaurant"                            <
 
-                            </tr>            </div>
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"                            /div>                    }
 
-                        </thead>        </div>
+                        required>
 
-                        <tbody class="divide-y divide-gray-200">
+                </div>                            <
 
-                            @foreach ($finances as $f)        @if ($finances->count() > 0)
+                            div class = "w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center" >
 
-                                <tr class="finance-row table-row-hover transition-all duration-200 hover:bg-blue-50/50">            <div class="overflow-x-auto rounded-lg">
+                <div>
 
-                                    <td class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">{{ $f->date->format('d/m/Y') }}</td>                <table class="w-full min-w-full">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>                            <
 
-                                    <td class="px-3 py-2 text-xs font-medium text-gray-900 max-w-[120px] truncate" title="{{ $f->description }}">{{ $f->description }}</td>                    <thead>
+                    <select name="method"                            i class = "fas fa-arrow-down text-red-600 text-lg" > <
 
-                                    <td class="px-3 py-2 text-xs whitespace-nowrap">                        <tr class="bg-gray-50/80">
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"                            /i>                    const addForm = document.getElementById('add-transaction-form');
 
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $f->method == 'cash' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' }}">                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        required>
 
-                                            {{ $f->method == 'cash' ? '💵 Cash' : '📱 GPay' }}                                Date</th>
+                        <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>💵 Cash</option>                            <
 
-                                        </span>                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <option value="gpay" {{ old('method') == 'gpay' ? 'selected' : '' }}>📱 GPay</option>                            /div>                    if (addForm) {
 
-                                    </td>                                Description</th>
+                    </select>
 
-                                    <td class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                </div>                            <
 
-                                        @if ($f->category)                                Method</th>
+                            /div>                        / / initial sync
 
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">{{ $f->category }}</span>                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                <div>
 
-                                        @else                                Category</th>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>                            <
 
-                                            <span class="text-gray-400">-</span>                            <th class="px-3 py-2 text-right text-xs font-semibold text-green-600 uppercase tracking-wider">
+                    <select name="category"                            /div>                        syncFormControls(addForm);
 
-                                        @endif                                Income</th>
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
 
-                                    </td>                            <th class="px-3 py-2 text-right text-xs font-semibold text-red-600 uppercase tracking-wider">
+                        <option value="">Select</option>
 
-                                    <td class="px-3 py-2 text-xs text-right font-medium text-green-600 whitespace-nowrap">{{ $f->income > 0 ? '₹' . number_format($f->income, 2) : '-' }}</td>                                Expense</th>
+                        <option value="Food" {{ old('category') == 'Food' ? 'selected' : '' }}>🍔 Food</option>
 
-                                    <td class="px-3 py-2 text-xs text-right font-medium text-red-600 whitespace-nowrap">{{ $f->expense > 0 ? '₹' . number_format($f->expense, 2) : '-' }}</td>                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <option value="Shopping" {{ old('category') == 'Shopping' ? 'selected' : '' }}>🛍️ Shopping</option>                            <
 
-                                    <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">₹{{ number_format($f->cash_balance, 2) }}</td>                                Cash Bal</th>
+                        <option value="Transport" {{ old('category') == 'Transport' ? 'selected' : '' }}>🚗 Transport</option>                            div class = "stats-card rounded-xl p-4 shadow-lg"
 
-                                    <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">₹{{ number_format($f->gpay_balance, 2) }}</td>                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <option value="Entertainment" {{ old('category') == 'Entertainment' ? 'selected' : '' }}>🎬 Entertainment</option>                        style = "border-left-color: #f59e0b;" > // re-sync on resize/orientation change (debounced)
 
-                                    <td class="px-3 py-2 text-xs text-right font-semibold text-gray-900 whitespace-nowrap">₹{{ number_format($f->balance, 2) }}</td>                                GPay Bal</th>
+                        <option value="Bills" {{ old('category') == 'Bills' ? 'selected' : '' }}>📄 Bills</option>
 
-                                    <td class="px-3 py-2 text-xs text-right whitespace-nowrap">                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        <option value="Salary" {{ old('category') == 'Salary' ? 'selected' : '' }}>💰 Salary</option>                            <
 
-                                        <div class="flex justify-end space-x-1">                                Total Bal</th>
+                        <option value="Other" {{ old('category') == 'Other' ? 'selected' : '' }}>📦 Other</option>                            div class = "flex items-center justify-between" >
 
-                                            <a href="{{ route('finances.edit', $f->id) }}" class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors">                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    </select>                            let t = null;
 
-                                                <i class="fas fa-edit mr-1"></i> Edit                                Actions</th>
+                </div>
 
-                                            </a>                        </tr>
+                        <
 
-                                            <form method="POST" action="{{ route('finances.destroy', $f->id) }}" onsubmit="return confirm('Are you sure you want to delete this entry?')" class="inline">                    </thead>
+                <div>                        div > window.addEventListener('resize', function() {
 
-                                                @csrf                    <tbody class="divide-y divide-gray-200">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Income</label>
 
-                                                @method('DELETE')                        @foreach ($finances as $f)
+                    <input type="number" step="0.01" name="income" value="{{ old('income') }}"                        <
 
-                                                <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200 transition-colors">                            <tr class="finance-row table-row-hover transition-all duration-200 hover:bg-blue-50/50">
+                        placeholder="0.00"                        p class = "text-gray-600 text-xs font-medium" > Net Savings <
 
-                                                    <i class="fas fa-trash mr-1"></i> Delete                                <td class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">                        /p>                            clearTimeout(t);
 
-                                                </button>                                    {{ $f->date->format('d/m/Y') }}</td>
+                </div>
 
-                                            </form>                                <td class="px-3 py-2 text-xs font-medium text-gray-900 max-w-[120px] truncate"
+                        <
 
-                                        </div>                                    title="{{ $f->description }}">
+                <div>                        p class = "text-xl font-bold text-gray-800" > ₹
 
-                                    </td>                                    {{ $f->description }}
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Expense</label>                        {{ number_format($totalIncome - $totalExpense, 2) }} <
 
-                                </tr>                                </td>
+                    <input type="number" step="0.01" name="expense" value="{{ old('expense') }}"                        /p>                            t = setTimeout(function() {
 
-                            @endforeach                                <td class="px-3 py-2 text-xs whitespace-nowrap">
+                        placeholder="0.00"
 
-                        </tbody>                                    <span
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">                        <
 
-                        <tfoot class="bg-gray-50/80 font-semibold">                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                </div>                        /div>                                syncFormControls(addForm);
 
-                            <tr>                                        {{ $f->method == 'cash' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' }}">
 
-                                <td colspan="4" class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">Final Totals</td>                                        {{ $f->method == 'cash' ? '💵 Cash' : '📱 GPay' }}
 
-                                <td class="px-3 py-2 text-xs text-right text-green-600 whitespace-nowrap">₹{{ number_format($totalIncome, 2) }}</td>                                    </span>
+                <div>                        <
 
-                                <td class="px-3 py-2 text-xs text-right text-red-600 whitespace-nowrap">₹{{ number_format($totalExpense, 2) }}</td>                                </td>
+                    <button type="submit"                        div class = "w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center" >
 
-                                <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">₹{{ number_format($finalCashBalance ?? 0, 2) }}</td>                                <td class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">
+                        class="w-full btn-primary text-white py-2 px-3 rounded-lg font-semibold transition-all text-sm">                        }, 120);
 
-                                <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">₹{{ number_format($finalGpayBalance ?? 0, 2) }}</td>                                    @if ($f->category)
+                        <i class="fas fa-plus mr-1"></i> Add
 
-                                <td class="px-3 py-2 text-xs text-right text-gray-900 whitespace-nowrap">₹{{ number_format($finalBalance, 2) }}</td>                                        <span
+                    </button>                        <
 
-                                <td></td>                                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">
+                </div>                        i class = "fas fa-piggy-bank text-yellow-600 text-lg" > < /i>                        });
 
-                            </tr>                                            {{ $f->category }}
+            </div>
 
-                        </tfoot>                                        </span>
+        </form>                        <
 
-                    </table>                                    @else
+    </div>                        /div>                        window.addEventListener('orientationchange', function() {
 
-                </div>                                        <span class="text-gray-400">-</span>
 
-            @else                                    @endif
 
-                <div class="text-center py-8">                                </td>
+    <!-- Opening Balance Card -->                        <
 
-                    <i class="fas fa-receipt text-3xl text-gray-300 mb-3"></i>                                <td class="px-3 py-2 text-xs text-right font-medium text-green-600 whitespace-nowrap">
+    <div class="glass-effect rounded-xl p-4 md:p-6 mb-6 card-hover">                        /div>                            setTimeout(function() {
 
-                    <p class="text-gray-500 text-sm">No transactions yet</p>                                    {{ $f->income > 0 ? '₹' . number_format($f->income, 2) : '-' }}
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
 
-                    <p class="text-gray-400 text-xs mt-1">Add your first transaction to get started!</p>                                </td>
+            <i class="fas fa-balance-scale text-primary mr-2"></i>                        <
 
-                </div>                                <td class="px-3 py-2 text-xs text-right font-medium text-red-600 whitespace-nowrap">
+            Set Opening Balance                        /div>                                syncFormControls(addForm);
 
-            @endif                                    {{ $f->expense > 0 ? '₹' . number_format($f->expense, 2) : '-' }}
+        </h3>
 
-        </div>                                </td>
+                        <
 
-    </div>                                <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
+        <form method="POST" action="{{ route('finances.opening') }}"                        /div>                            }, 150);
 
-                                    ₹{{ number_format($f->cash_balance, 2) }}</td>
+            class="space-y-3 md:space-y-0 md:flex md:items-end md:gap-4">
 
-    @push('styles')                                <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
+            @csrf                        });
 
-        <style>                                    ₹{{ number_format($f->gpay_balance, 2) }}</td>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:flex-1">
 
-            @media (max-width: 768px) {                                <td class="px-3 py-2 text-xs text-right font-semibold text-gray-900 whitespace-nowrap">
+                <div>                        <
 
-                .overflow-x-auto {                                    ₹{{ number_format($f->balance, 2) }}</td>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>                        !--Add Entry Form-- >
 
-                    -webkit-overflow-scrolling: touch;                                <td class="px-3 py-2 text-xs text-right whitespace-nowrap">
+                    <input type="number" step="0.01" name="amount" placeholder="0.00"                        }
 
-                }                                    <div class="flex justify-end space-x-1">
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
 
-                table {                                        <a href="{{ route('finances.edit', $f->id) }}"
+                </div>                        <
 
-                    font-size: 0.75rem;                                            class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors">
+                        div class = "glass-effect rounded-xl p-4 md:p-6 mb-6 card-hover" >
 
-                }                                            <i class="fas fa-edit mr-1"></i> Edit
+                <div>                        })();
 
-                .finance-row td {                                        </a>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>
 
-                    padding: 0.5rem 0.25rem;                                        <form method="POST" action="{{ route('finances.destroy', $f->id) }}"
+                    <select name="method"                        <
 
-                }                                            onsubmit="return confirm('Are you sure you want to delete this entry?')"
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"                        h3 class = "text-lg font-semibold text-gray-800 mb-4 flex items-center" >
 
-            }                                            class="inline">
+                        required>                    </script>
+
+                        <option value="cash">💵 Cash</option>
+
+                        <option value="gpay">📱 GPay</option>                    <i class="fas fa-plus-circle text-primary mr-2"></i>
+
+                    </select>                    <div>
+
+                </div>
+
+                        Add New Transaction <p class="text-gray-600 text-xs font-medium">Net Savings</p>
+
+                <div class="md:flex md:items-end">
+
+                    <button type="submit"                        </h3>
+
+                        class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-semibold transition-all text-sm">                        <p class="text-xl font-bold text-gray-800">₹{{ number_format($totalIncome - $totalExpense, 2) }}
+
+                        <i class="fas fa-save mr-1"></i>Set Balance                        </p>
+
+                    </button>
+
+                </div>                    </div>
+
+            </div>
+
+        </form>                    <form id="add-transaction-form" method="POST" action="{{ route('finances.store') }}" class="space-y-4">
+
+        <p class="text-gray-600 text-xs mt-3">                        <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+
+            💡 Set opening balance (positive for income, negative for expense)
+
+        </p>                            @csrf <i class="fas fa-piggy-bank text-yellow-600 text-lg"></i>
+
+    </div>
+
+                            <div id="form-error" style="display:none" class="errors"></div>
+
+    <!-- Transactions Table -->                        </div>
+
+    <div class="glass-effect rounded-xl p-4 md:p-6 card-hover">
+
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">                </div>
+
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center mb-2 sm:mb-0">
+
+                <i class="fas fa-list-alt text-primary mr-2"></i>                <!-- Mobile Layout (Stacked) -->
+
+                Transaction History    </div>
+
+            </h3>
+
+            <div class="text-sm text-gray-600">    <div class="block md:hidden space-y-4"> </div>
+
+                Total Records: {{ $finances->count() }}
+
+            </div>    <div class="grid grid-cols-1 gap-4">
+
+        </div>
+
+        <div> <!-- Add Entry Form -->
+
+        @if ($finances->count() > 0)
+
+            <div class="overflow-x-auto rounded-lg">            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+
+                <table class="w-full min-w-full">            <div class="glass-effect rounded-xl p-4 md:p-6 mb-6 card-hover">
+
+                    <thead>
+
+                        <tr class="bg-gray-50/80">                <input type="date" name="date" max="{{ now()->toDateString() }}" <h3
+
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>                    class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Description</th>
+
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Method</th>                value="{{ old('date', now()->toDateString()) }}" <i class="fas fa-plus-circle text-primary mr-2"></i>
+
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Category</th>
+
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-green-600 uppercase tracking-wider">Income</th>                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all" Add New
+
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-red-600 uppercase tracking-wider">Expense</th>                Transaction
+
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Cash Bal</th>
+
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">GPay Bal</th>                required> </h3>
+
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Bal</th>
+
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>            </div>
+
+                        </tr>
+
+                    </thead>            <form id="add-transaction-form" method="POST" action="{{ route('finances.store') }}" class="space-y-4">
+
+                    <tbody class="divide-y divide-gray-200">
+
+                        @foreach ($finances as $f)                <div> @csrf
+
+                            <tr class="finance-row table-row-hover transition-all duration-200 hover:bg-blue-50/50">
+
+                                <td class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">{{ $f->date->format('d/m/Y') }}</td>                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+
+                                <td class="px-3 py-2 text-xs font-medium text-gray-900 max-w-[120px] truncate" title="{{ $f->description }}">{{ $f->description }}</td>                    <div id="form-error" style="display:none" class="errors"></div>
+
+                                <td class="px-3 py-2 text-xs whitespace-nowrap">
+
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $f->method == 'cash' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' }}">                    <input type="text" name="description" value="{{ old('description') }}"
+
+                                        {{ $f->method == 'cash' ? '💵 Cash' : '📱 GPay' }}                        placeholder="e.g. Lunch at Restaurant" <!-- Mobile Layout (Stacked) -->
+
+                                    </span>
+
+                                </td>                    class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all" <div
+
+                                <td class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">                        class="block md:hidden space-y-4">
+
+                                    @if ($f->category)
+
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">{{ $f->category }}</span>                        required> <div class="grid grid-cols-1 gap-4">
+
+                                    @else
+
+                                        <span class="text-gray-400">-</span>                        </div>
+
+                                    @endif                        <div>
+
+                                </td>
+
+                                <td class="px-3 py-2 text-xs text-right font-medium text-green-600 whitespace-nowrap">{{ $f->income > 0 ? '₹' . number_format($f->income, 2) : '-' }}</td>                        </div> <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+
+                                <td class="px-3 py-2 text-xs text-right font-medium text-red-600 whitespace-nowrap">{{ $f->expense > 0 ? '₹' . number_format($f->expense, 2) : '-' }}</td>
+
+                                <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">₹{{ number_format($f->cash_balance, 2) }}</td>                        <input type="date" name="date" max="{{ now()->toDateString() }}" <div
+
+                                <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">₹{{ number_format($f->gpay_balance, 2) }}</td>                            class="grid grid-cols-2 gap-4"> value="{{ old('date', now()->toDateString()) }}"
+
+                                <td class="px-3 py-2 text-xs text-right font-semibold text-gray-900 whitespace-nowrap">₹{{ number_format($f->balance, 2) }}</td>
+
+                                <td class="px-3 py-2 text-xs text-right whitespace-nowrap">                        <div>
+
+                                    <div class="flex justify-end space-x-1">                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
+
+                                        <a href="{{ route('finances.edit', $f->id) }}" class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors">
+
+                                            <i class="fas fa-edit mr-1"></i> Edit                            <label class="block text-sm font-medium text-gray-700 mb-1">Method</label> required>
+
+                                        </a>
+
+                                        <form method="POST" action="{{ route('finances.destroy', $f->id) }}" onsubmit="return confirm('Are you sure?')" class="inline">                            <select name="method" </div>
 
                                             @csrf
 
-            .overflow-x-auto {                                            @method('DELETE')
+                                            @method('DELETE')                                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
 
-                overflow-x: auto;                                            <button type="submit"
+                                            <button type="submit" class="inline-flex items-center px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200 transition-colors">
 
-                width: 100%;                                                class="inline-flex items-center px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200 transition-colors">
-
-            }                                                <i class="fas fa-trash mr-1"></i> Delete
+                                                <i class="fas fa-trash mr-1"></i> Delete                                required> <div>
 
                                             </button>
 
-            @media (max-width: 640px) {                                        </form>
+                                        </form>                                    <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>💵 Cash
 
-                .stats-card {                                    </div>
+                                    </div>                                    </option> <label
 
-                    padding: 0.75rem;                                </td>
+                                </td>                                        class="block text-sm font-medium text-gray-700 mb-1">Description</label>
 
-                }                            </tr>
+                            </tr>
 
-                .stats-card p.text-xl {                        @endforeach
+                        @endforeach                                    <option value="gpay" {{ old('method') == 'gpay' ? 'selected' : '' }}>📱 GPay
 
-                    font-size: 1.125rem;                    </tbody>
+                    </tbody>                                    </option> <input type="text" name="description" value="{{ old('description') }}"
 
-                }                    <tfoot class="bg-gray-50/80 font-semibold">
+                    <tfoot class="bg-gray-50/80 font-semibold">                                        </select> placeholder="e.g. Lunch at Restaurant"
 
-                .glass-effect {                        <tr>
+                        <tr>
 
-                    padding: 1rem;                            <td colspan="4" class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">Final Totals
+                            <td colspan="4" class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">Final Totals</td>                                </div>
 
-                }                            </td>
+                            <td class="px-3 py-2 text-xs text-right text-green-600 whitespace-nowrap">₹{{ number_format($totalIncome, 2) }}</td>                                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
 
-            }                            <td class="px-3 py-2 text-xs text-right text-green-600 whitespace-nowrap">
+                            <td class="px-3 py-2 text-xs text-right text-red-600 whitespace-nowrap">₹{{ number_format($totalExpense, 2) }}</td>
 
-                                ₹{{ number_format($totalIncome, 2) }}</td>
+                            <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">₹{{ number_format($finalCashBalance ?? 0, 2) }}</td>                                required>
 
-            .errors {                            <td class="px-3 py-2 text-xs text-right text-red-600 whitespace-nowrap">
+                            <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">₹{{ number_format($finalGpayBalance ?? 0, 2) }}</td>
 
-                background: #fff5f5;                                ₹{{ number_format($totalExpense, 2) }}</td>
-
-                border: 1px solid rgba(239, 68, 68, 0.12);                            <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
-
-                color: #ef4444;                                ₹{{ number_format($finalCashBalance ?? 0, 2) }}</td>
-
-                padding: 10px;                            <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
-
-                border-radius: 6px;                                ₹{{ number_format($finalGpayBalance ?? 0, 2) }}</td>
-
-                margin-bottom: 12px;                            <td class="px-3 py-2 text-xs text-right text-gray-900 whitespace-nowrap">
-
-            }                                ₹{{ number_format($finalBalance, 2) }}</td>
+                            <td class="px-3 py-2 text-xs text-right text-gray-900 whitespace-nowrap">₹{{ number_format($finalBalance, 2) }}</td>                                <div> </div>
 
                             <td></td>
 
-            .errors li {                        </tr>
+                        </tr>                                <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
 
-                list-style: disc;                    </tfoot>
+                    </tfoot>                        </div>
 
-                margin-left: 20px;                </table>
+                </table>
 
-            }            </div>
+            </div>                        <select name="category"
 
-        </style>        @else
+        @else                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
 
-    @endpush            <div class="text-center py-8">
+            <div class="text-center py-8">                            <div class="grid grid-cols-2 gap-4">
 
                 <i class="fas fa-receipt text-3xl text-gray-300 mb-3"></i>
 
-    @push('scripts')                <p class="text-gray-500 text-sm">No transactions yet</p>
+                <p class="text-gray-500 text-sm">No transactions yet</p>                                <option value="">Select</option>
 
-        <script>                <p class="text-gray-400 text-xs mt-1">Add your first transaction to get started!</p>
+                <p class="text-gray-400 text-xs mt-1">Add your first transaction to get started!</p>                                <div>
 
-            document.addEventListener('DOMContentLoaded', function() {            </div>
+            </div>
 
-                // Auto-format currency inputs        @endif
+        @endif                                    <option value="Food" {{ old('category') == 'Food' ? 'selected' : '' }}>🍔 Food
 
-                const incomeInput = document.querySelector('input[name="income"]');    </div>
+    </div>                                    </option> <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>
 
-                const expenseInput = document.querySelector('input[name="expense"]');    </div>
+</div>
 
-                const amountInput = document.querySelector('input[name="amount"]');
+                                    <option value="Shopping" {{ old('category') == 'Shopping' ? 'selected' : '' }}>🛍️
 
-    @push('styles')
+@push('styles')                                        Shopping</option> <select name="method" <option value="Transport"
 
-                function formatCurrencyInput(input) {        <style>
+    <style>                                        {{ old('category') == 'Transport' ? 'selected' : '' }}>🚗 Transport</option>
 
-                    input.addEventListener('blur', function() {            @media (max-width: 768px) {
+        .errors {                                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
 
-                        if (this.value) {                .overflow-x-auto {
+            background: #fff5f5;
 
-                            this.value = parseFloat(this.value).toFixed(2);                    -webkit-overflow-scrolling: touch;
+            border: 1px solid rgba(239, 68, 68, 0.12);                                        <option value="Entertainment"
 
-                        }                }
+            color: #ef4444;                                            {{ old('category') == 'Entertainment' ? 'selected' : '' }}>🎬 Entertainment
 
-                    });
+            padding: 10px;                                        </option> required>
 
-                }                table {
+            border-radius: 6px;
 
-                    font-size: 0.75rem;
+            margin-bottom: 12px;                                        <option value="Bills" {{ old('category') == 'Bills' ? 'selected' : '' }}>📄
 
-                if (incomeInput) formatCurrencyInput(incomeInput);                }
+        }                                            Bills</option>
 
-                if (expenseInput) formatCurrencyInput(expenseInput);
+                                        <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>💵 Cash
 
-                if (amountInput) formatCurrencyInput(amountInput);                .finance-row td {
+        .errors li {                                        </option>
 
-                    padding: 0.5rem 0.25rem;
+            list-style: disc;
 
-                // Ensure only one of income/expense is filled                }
+            margin-left: 20px;                                        <option value="Salary" {{ old('category') == 'Salary' ? 'selected' : '' }}>💰
 
-                function validateAmounts() {            }
+        }                                            Salary</option>
 
-                    if (incomeInput && expenseInput) {
+                                        <option value="gpay" {{ old('method') == 'gpay' ? 'selected' : '' }}>📱 GPay
 
-                        if (incomeInput.value && expenseInput.value) {            /* Ensure table is properly scrollable on mobile */
+        @media (max-width: 768px) {                                        </option>
 
-                            expenseInput.value = '';            .overflow-x-auto {
+            .overflow-x-auto {
 
-                        }                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;                                        <option value="Other" {{ old('category') == 'Other' ? 'selected' : '' }}>📦
 
-                    }                width: 100%;
+            }                                            Other</option>
 
-                }            }
+            table {                                    </select>
 
+                font-size: 0.75rem;
 
+            }                        </select>
 
-                if (incomeInput) incomeInput.addEventListener('input', validateAmounts);            /* Fix for small screens */
+            .finance-row td {                    </div>
 
-                if (expenseInput) expenseInput.addEventListener('input', validateAmounts);            @media (max-width: 640px) {
+                padding: 0.5rem 0.25rem;
 
-            });                .stats-card {
+            }                </div>
 
-        </script>                    padding: 0.75rem;
+        }
 
-                }
+        </div>
 
-        <script>
+        @media (max-width: 640px) {        <div>
 
-            // Handle form submission validation and sync duplicate form controls                .stats-card p.text-xl {
+            .stats-card {
 
-            document.addEventListener('DOMContentLoaded', function() {                    font-size: 1.125rem;
+                padding: 0.75rem;            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
 
-                const form = document.getElementById('add-transaction-form');                }
+            }
 
-                if (!form) return;
+            .stats-card p.text-xl {            <div class="grid grid-cols-2 gap-4"> <select name="category" <div>
 
-                .glass-effect {
+                font-size: 1.125rem;                    class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
 
-                const income = form.querySelector('input[name="income"]');                    padding: 1rem;
+            }
 
-                const expense = form.querySelector('input[name="expense"]');                }
+            .glass-effect {                    <label class="block text-sm font-medium text-gray-700 mb-1">Income</label>
 
-                const method = form.querySelector('select[name="method"]');            }
+                padding: 1rem;                    <option value="">Select</option>
 
-                const errorDiv = document.getElementById('form-error');
+            }
 
-            .errors {
+        }                    <input type="number" step="0.01" name="income" value="{{ old('income') }}" <option
 
-                // Robustly sync duplicate inputs (mobile + desktop) to disable hidden ones                background: #fff5f5;
+    </style>                        value="Food" {{ old('category') == 'Food' ? 'selected' : '' }}>🍔 Food</option>
 
-                function isVisible(el) {                border: 1px solid rgba(239, 68, 68, 0.12);
+@endpush
 
-                    if (!el || el.type === 'hidden') return false;                color: var(--danger);
+                    placeholder="0.00" <option value="Shopping" {{ old('category') == 'Shopping' ? 'selected' : '' }}>
 
-                    const style = window.getComputedStyle(el);                padding: 10px;
+@push('scripts')                        🛍️ Shopping
 
-                    if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return false;                border-radius: 6px;
+    <script>
 
-                    const rects = el.getClientRects();                margin-bottom: 12px
+        document.addEventListener('DOMContentLoaded', function() {                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
 
-                    return rects.length > 0 && rects[0].width > 0 && rects[0].height > 0;            }
+            const form = document.getElementById('add-transaction-form');                    </option>
 
-                }        </style>
+            if (!form) return;
 
-    @endpush
+            </div>
 
-                function syncFormControls() {
+            const income = form.querySelector('input[name="income"]');            <option value="Transport" {{ old('category') == 'Transport' ? 'selected' : '' }}>🚗
 
-                    const named = {};    @push('scripts')
+            const expense = form.querySelector('input[name="expense"]');
 
-                    form.querySelectorAll('input[name],select[name],textarea[name]').forEach(el => {        <script>
+            const method = form.querySelector('select[name="method"]');                Transport</option>
 
-                        if (el.type === 'hidden' || el.matches('button,input[type="submit"]')) return;            document.addEventListener('DOMContentLoaded', function() {
+            const errorDiv = document.getElementById('form-error');
 
-                        const name = el.getAttribute('name');                // Auto-format currency inputs
+            <div>
 
-                        if (!name) return;                const incomeInput = document.querySelector('input[name="income"]');
+            // Sync duplicate form controls (mobile/desktop variants)                <option value="Entertainment" {{ old('category') == 'Entertainment' ? 'selected' : '' }}>🎬
 
-                        named[name] = named[name] || [];                const expenseInput = document.querySelector('input[name="expense"]');
+            function isVisible(el) {
 
-                        named[name].push(el);                const amountInput = document.querySelector('input[name="amount"]');
+                if (!el || el.type === 'hidden') return false;                    <label class="block text-sm font-medium text-gray-700 mb-1">Expense</label> Entertainment
 
-                    });
+                const style = window.getComputedStyle(el);                </option>
 
-                function formatCurrencyInput(input) {
+                if (style.display === 'none' || style.visibility === 'hidden') return false;
 
-                    Object.keys(named).forEach(name => {                    input.addEventListener('blur', function() {
+                const rects = el.getClientRects();                <input type="number" step="0.01" name="expense" value="{{ old('expense') }}" <option value="Bills"
 
-                        const group = named[name];                        if (this.value) {
+                return rects.length > 0 && rects[0].width > 0;                    {{ old('category') == 'Bills' ? 'selected' : '' }}>📄 Bills</option>
 
-                        const visible = group.find(isVisible) || group[0];                            this.value = parseFloat(this.value).toFixed(2);
+            }
 
-                        group.forEach(el => {                        }
+                placeholder="0.00" <option value="Salary" {{ old('category') == 'Salary' ? 'selected' : '' }}>💰 Salary
 
-                            if (el === visible) {                    });
+            function syncControls() {
 
-                                el.removeAttribute('disabled');                }
+                const named = {};                    class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
 
-                            } else {
+                form.querySelectorAll('[name]:not([type="hidden"]):not(button)').forEach(el => {                </option>
 
-                                el.setAttribute('disabled', 'disabled');                if (incomeInput) formatCurrencyInput(incomeInput);
+                    const name = el.getAttribute('name');
 
-                            }                if (expenseInput) formatCurrencyInput(expenseInput);
+                    if (!name) return;            </div>
 
-                        });                if (amountInput) formatCurrencyInput(amountInput);
+                    named[name] = named[name] || [];            <option value="Other" {{ old('category') == 'Other' ? 'selected' : '' }}>📦 Other</option>
 
-                    });
+                    named[name].push(el);
 
-                }                // Ensure only one of income/expense is filled
+                });        </div> </select>
 
-                function validateAmounts() {
 
-                // Initial sync                    if (incomeInput && expenseInput) {
 
-                syncFormControls();                        if (incomeInput.value && expenseInput.value) {
+                Object.values(named).forEach(group => {    </div>
 
-                            expenseInput.value = '';
+                    const visible = group.find(isVisible) || group[0];
 
-                // Re-sync on resize and orientation change                        }
+                    group.forEach(el => {    <div> </div>
 
-                let resizeTimer;                    }
+                        el.toggleAttribute('disabled', el !== visible);
 
-                window.addEventListener('resize', function() {                }
+                    });    <button type="submit"
 
-                    clearTimeout(resizeTimer);
+                });        class="w-full btn-primary text-white py-2 px-4 rounded-lg font-semibold transition-all text-sm">
 
-                    resizeTimer = setTimeout(syncFormControls, 120);                if (incomeInput) incomeInput.addEventListener('input', validateAmounts);
+            }        <div class="grid grid-cols-2 gap-4">
 
-                });                if (expenseInput) expenseInput.addEventListener('input', validateAmounts);
 
-                window.addEventListener('orientationchange', function() {            });
 
-                    setTimeout(syncFormControls, 150);        </script>
+            syncControls();            <i class="fas fa-plus mr-1"></i> Add Transaction <div>
 
-                });    @endpush
+            let timer;
+
+            window.addEventListener('resize', () => {    </button> <label class="block text-sm font-medium text-gray-700 mb-1">Income</label>
+
+                clearTimeout(timer);
+
+                timer = setTimeout(syncControls, 150);</div> <input type="number" step="0.01" name="income" value="{{ old('income') }}" placeholder="0.00" </div>
+
+            });class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+
+
+
+            // Form validation</div>
+
+            form.addEventListener('submit', function(e) {
+
+                if (errorDiv) {<!-- Desktop Layout (Grid) -->
+
+                    errorDiv.style.display = 'none';
+
+                    errorDiv.innerHTML = '';<div class="hidden md:grid md:grid-cols-7 gap-3 items-end">
+
+                }    <div>
+
+
+
+                if (!method || !method.value) {        <div> <label class="block text-sm font-medium text-gray-700 mb-1">Expense</label>
+
+                    e.preventDefault();
+
+                    if (errorDiv) {            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label> <input type="number"
+
+                        errorDiv.style.display = 'block';                step="0.01" name="expense" value="{{ old('expense') }}" placeholder="0.00" <input
+
+                        errorDiv.innerHTML = '<ul><li>Please select a payment method.</li></ul>';                type="date" name="date" max="{{ now()->toDateString() }}"
+
+                    }                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+
+                    return false;
+
+                }            value="{{ old('date', now()->toDateString()) }}"
+
+        </div>
+
+                const inc = parseFloat(income?.value || 0);
+
+                const exp = parseFloat(expense?.value || 0);        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
+
+                if ((!inc || inc <= 0) && (!exp || exp <= 0)) {    </div>
+
+                    e.preventDefault();
+
+                    if (errorDiv) {    required>
+
+                        errorDiv.style.display = 'block';
+
+                        errorDiv.innerHTML = '<ul><li>Enter income or expense amount.</li></ul>';</div>
+
+                    }<div>
+
+                    return false;
+
+                }    <button type="submit" <div class="col-span-2">
+
+            });        class="w-full btn-primary text-white py-2 px-4 rounded-lg font-semibold transition-all text-sm">
+
+
+
+            // Auto-format currency        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label> <i
+
+            [income, expense].forEach(input => {            class="fas fa-plus mr-1"></i> Add Transaction
+
+                if (input) {
+
+                    input.addEventListener('blur', function() {        <input type="text" name="description" value="{{ old('description') }}" </button>
+
+                        if (this.value) this.value = parseFloat(this.value).toFixed(2);
+
+                    });        placeholder="e.g. Lunch at Restaurant"
+
+                }</div>
+
+            });
+
+        });class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all" </div>
+
+    </script>
+
+@endpushrequired>
 
 @endsection
 
-                // Validate on submit
+</div> <!-- Desktop Layout (Grid) -->
 
-                form.addEventListener('submit', function(e) {@push('scripts')
+<div class="hidden md:grid md:grid-cols-7 gap-3 items-end">
 
-                    if (errorDiv) {    <script>
+    <div>
+        <div>
 
-                        errorDiv.style.display = 'none';        document.addEventListener('DOMContentLoaded', function() {
+            <label class="block text-sm font-medium text-gray-700 mb-1">Method</label> <label
+                class="block text-sm font-medium text-gray-700 mb-1">Date</label>
 
-                        errorDiv.innerHTML = '';            const form = document.getElementById('add-transaction-form');
+            <select name="method" <input type="date" name="date" max="{{ now()->toDateString() }}"
+                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
+                value="{{ old('date', now()->toDateString()) }}" required>
+                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
 
-                    }            if (!form) return;
+                <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>💵 Cash</option> required>
+
+                <option value="gpay" {{ old('method') == 'gpay' ? 'selected' : '' }}>📱 GPay</option>
+        </div>
+
+        </select>
+
+    </div>
+    <div class="col-span-2">
+
+        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+
+        <div> <input type="text" name="description" value="{{ old('description') }}" <label
+                class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            placeholder="e.g. Lunch at Restaurant"
+
+            <select name="category"
+                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
+                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+                required>
+
+                <option value="">Select</option>
+        </div>
+
+        <option value="Food" {{ old('category') == 'Food' ? 'selected' : '' }}>🍔 Food</option>
+
+        <option value="Shopping" {{ old('category') == 'Shopping' ? 'selected' : '' }}>🛍️ Shopping</option>
+        <div>
+
+            <option value="Transport" {{ old('category') == 'Transport' ? 'selected' : '' }}>🚗 Transport</option>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>
+
+            <option value="Entertainment" {{ old('category') == 'Entertainment' ? 'selected' : '' }}>🎬 Entertainment
+            </option> <select name="method" <option value="Bills"
+                {{ old('category') == 'Bills' ? 'selected' : '' }}>📄 Bills</option>
+                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
+
+                <option value="Salary" {{ old('category') == 'Salary' ? 'selected' : '' }}>💰 Salary</option>
+                required>
+
+                <option value="Other" {{ old('category') == 'Other' ? 'selected' : '' }}>📦 Other</option>
+                <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>💵 Cash</option>
+
+            </select>
+            <option value="gpay" {{ old('method') == 'gpay' ? 'selected' : '' }}>📱 GPay</option>
+
+        </div> </select>
+
+    </div>
+
+    <div>
+
+        <label class="block text-sm font-medium text-gray-700 mb-1">Income</label>
+        <div>
+
+            <input type="number" step="0.01" name="income" value="{{ old('income') }}" <label
+                class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+
+            placeholder="0.00" <select name="category"
+                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+
+        </div>
+        <option value="">Select</option>
+
+        <option value="Food" {{ old('category') == 'Food' ? 'selected' : '' }}>🍔 Food</option>
+
+        <div>
+            <option value="Shopping" {{ old('category') == 'Shopping' ? 'selected' : '' }}>🛍️ Shopping
+
+                <label class="block text-sm font-medium text-gray-700 mb-1">Expense</label>
+            </option>
+
+            <input type="number" step="0.01" name="expense" value="{{ old('expense') }}" <option
+                value="Transport" {{ old('category') == 'Transport' ? 'selected' : '' }}>🚗 Transport
+
+            placeholder="0.00" </option>
+
+            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"> <option
+                value="Entertainment" {{ old('category') == 'Entertainment' ? 'selected' : '' }}>🎬
+
+        </div> Entertainment</option>
+
+        <option value="Bills" {{ old('category') == 'Bills' ? 'selected' : '' }}>📄 Bills</option>
+
+        <div>
+            <option value="Salary" {{ old('category') == 'Salary' ? 'selected' : '' }}>💰 Salary</option>
+
+            <button type="submit" <option value="Other" {{ old('category') == 'Other' ? 'selected' : '' }}>📦 Other
+                </option>
+
+                class="w-full btn-primary text-white py-2 px-3 rounded-lg font-semibold transition-all text-sm">
+                </select>
+
+                <i class="fas fa-plus mr-1"></i> Add
+        </div>
+
+        </button>
+
+    </div>
+    <div>
+
+    </div> <label class="block text-sm font-medium text-gray-700 mb-1">Income</label>
+
+    </form> <input type="number" step="0.01" name="income" value="{{ old('income') }}" placeholder="0.00"
+        </div> class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+
+</div>
+
+<!-- Opening Balance Card -->
+
+<div class="glass-effect rounded-xl p-4 md:p-6 mb-6 card-hover">
+    <div>
+
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center"> <label
+                class="block text-sm font-medium text-gray-700 mb-1">Expense</label>
+
+            <i class="fas fa-balance-scale text-primary mr-2"></i> <input type="number" step="0.01"
+                name="expense" value="{{ old('expense') }}" Set Opening Balance placeholder="0.00" </h3>
+            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+
+    </div>
+
+    <form method="POST" action="{{ route('finances.opening') }}"
+        class="space-y-3 md:space-y-0 md:flex md:items-end md:gap-4">
+        <div>
+
+            @csrf <button type="submit" <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:flex-1">
+                class="w-full btn-primary text-white py-2 px-3 rounded-lg font-semibold transition-all text-sm">
+
+                <div> <i class="fas fa-plus mr-1"></i> Add
+
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+            </button>
+
+            <input type="number" step="0.01" name="amount" placeholder="0.00" </div>
+
+            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+        </div>
+
+</div>
+</form>
+
+</div>
+
+<div>
+
+    <label class="block text-sm font-medium text-gray-700 mb-1">Method</label> <!-- Opening Balance Card -->
+
+    <select name="method" <div class="glass-effect rounded-xl p-4 md:p-6 mb-6 card-hover">
+
+        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all" <h3
+            class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+
+            required> <i class="fas fa-balance-scale text-primary mr-2"></i>
+
+            <option value="cash">💵 Cash</option> Set Opening Balance
+
+            <option value="gpay">📱 GPay</option>
+        </h3>
+
+    </select>
+
+</div>
+<form method="POST" action="{{ route('finances.opening') }}"
+    class="space-y-3 md:space-y-0 md:flex md:items-end md:gap-4">
+
+    <div class="md:flex md:items-end"> @csrf
+
+        <button type="submit" <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:flex-1">
+
+            class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-semibold transition-all text-sm">
+            <div>
+
+                <i class="fas fa-save mr-1"></i>Set Balance <label
+                    class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+
+        </button> <input type="number" step="0.01" name="amount" placeholder="0.00" </div>
+        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+
+    </div>
+    </div>
+
+</form>
+
+<p class="text-gray-600 text-xs mt-3">
+<div>
+
+    💡 Set opening balance (positive for income, negative for expense) <label
+        class="block text-sm font-medium text-gray-700 mb-1">Method</label>
+
+    </p> <select name="method" </div>
+        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
+
+        required>
+
+        <!-- Transactions Table -->
+        <option value="cash">💵 Cash</option>
+
+        <div class="glass-effect rounded-xl p-4 md:p-6 card-hover">
+            <option value="gpay">📱 GPay</option>
+
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+    </select>
+
+    <h3 class="text-lg font-semibold text-gray-800 flex items-center mb-2 sm:mb-0">
+</div>
+
+<i class="fas fa-list-alt text-primary mr-2"></i>
+
+Transaction History <div class="md:flex md:items-end">
+
+    </h3> <button type="submit" <div class="text-sm text-gray-600">
+        class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-semibold transition-all text-sm">
+
+        Total Records: {{ $finances->count() }} <i class="fas fa-save mr-1"></i>Set Balance
+
+</div> </button>
+
+</div>
+</div>
+
+</div>
+
+@if ($finances->count() > 0)
+    </form>
+
+    <div class="overflow-x-auto rounded-lg">
+        <p class="text-gray-600 text-xs mt-3">
+
+        <table class="w-full min-w-full"> 💡 Set opening balance (positive for income, negative for expense)
+
+            <thead>
+                </p>
+
+                <tr class="bg-gray-50/80">
+    </div>
+
+    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
+
+    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Description</th>
+    <!-- Transactions Table -->
+
+    <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Method</th>
+    <div class="glass-effect rounded-xl p-4 md:p-6 card-hover">
+
+        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Category</th>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+
+            <th class="px-3 py-2 text-right text-xs font-semibold text-green-600 uppercase tracking-wider">Income</th>
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center mb-2 sm:mb-0">
+
+                <th class="px-3 py-2 text-right text-xs font-semibold text-red-600 uppercase tracking-wider">Expense
+                </th> <i class="fas fa-list-alt text-primary mr-2"></i>
+
+                <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Cash Bal
+                </th> Transaction History
+
+                <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">GPay Bal
+                </th>
+            </h3>
+
+            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Total Bal
+            </th>
+            <div class="text-sm text-gray-600">
+
+                <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions
+                </th> Total Records: {{ $finances->count() }}
+
+                </tr>
+            </div>
+
+            </thead>
+        </div>
+
+        <tbody class="divide-y divide-gray-200">
+
+            @foreach ($finances as $f)
+                @if ($finances->count() > 0)
+
+                    <tr class="finance-row table-row-hover transition-all duration-200 hover:bg-blue-50/50">
+                        <div class="overflow-x-auto rounded-lg">
+
+                            <td class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">
+                                {{ $f->date->format('d/m/Y') }}</td>
+                            <table class="w-full min-w-full">
+
+                                <td class="px-3 py-2 text-xs font-medium text-gray-900 max-w-[120px] truncate"
+                                    title="{{ $f->description }}">{{ $f->description }}</td>
+                                <thead>
+
+                                    <td class="px-3 py-2 text-xs whitespace-nowrap">
+                                        <tr class="bg-gray-50/80">
+
+                                            <span
+                                                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $f->method == 'cash' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' }}">
+                                                <th
+                                                    class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+
+                                                    {{ $f->method == 'cash' ? '💵 Cash' : '📱 GPay' }} Date</th>
+
+                                            </span>
+                                            <th
+                                                class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+
+                                    </td> Description</th>
+
+                                    <td class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">
+                                    <th
+                                        class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+
+                                        @if ($f->category) Method
+                                    </th>
+
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">{{ $f->category }}</span>
+                                    <th
+                                        class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                    @else
+                                        Category</th>
+
+                                    <span class="text-gray-400">-</span>
+                                    <th
+                                        class="px-3 py-2 text-right text-xs font-semibold text-green-600 uppercase tracking-wider">
+
+                @endif Income</th>
+
+                </td>
+                <th class="px-3 py-2 text-right text-xs font-semibold text-red-600 uppercase tracking-wider">
+
+                <td class="px-3 py-2 text-xs text-right font-medium text-green-600 whitespace-nowrap">
+                    {{ $f->income > 0 ? '₹' . number_format($f->income, 2) : '-' }}</td> Expense</th>
+
+                <td class="px-3 py-2 text-xs text-right font-medium text-red-600 whitespace-nowrap">
+                    {{ $f->expense > 0 ? '₹' . number_format($f->expense, 2) : '-' }}</td>
+                <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+
+                <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
+                    ₹{{ number_format($f->cash_balance, 2) }}</td> Cash Bal</th>
+
+                <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
+                    ₹{{ number_format($f->gpay_balance, 2) }}</td>
+                <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+
+                <td class="px-3 py-2 text-xs text-right font-semibold text-gray-900 whitespace-nowrap">
+                    ₹{{ number_format($f->balance, 2) }}</td> GPay Bal</th>
+
+                <td class="px-3 py-2 text-xs text-right whitespace-nowrap">
+                <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+
+                    <div class="flex justify-end space-x-1"> Total Bal
+                </th>
+
+                <a href="{{ route('finances.edit', $f->id) }}"
+                    class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors">
+                    <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+
+                        <i class="fas fa-edit mr-1"></i> Edit Actions
+                    </th>
+
+                </a> </tr>
+
+                <form method="POST" action="{{ route('finances.destroy', $f->id) }}"
+                    onsubmit="return confirm('Are you sure you want to delete this entry?')" class="inline">
+                    </thead>
+
+                    @csrf
+        <tbody class="divide-y divide-gray-200">
+
+            @method('DELETE') @foreach ($finances as $f)
+
+                <button type="submit"
+                    class="inline-flex items-center px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200 transition-colors">
+                    <tr class="finance-row table-row-hover transition-all duration-200 hover:bg-blue-50/50">
+
+                        <i class="fas fa-trash mr-1"></i> Delete <td
+                            class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">
+
+                </button> {{ $f->date->format('d/m/Y') }}</td>
+
+                </form>
+                <td class="px-3 py-2 text-xs font-medium text-gray-900 max-w-[120px] truncate" </div>
+                    title="{{ $f->description }}">
+
+                </td> {{ $f->description }}
+
+                </tr>
+                </td>
+
+            @endforeach
+            <td class="px-3 py-2 text-xs whitespace-nowrap">
+
+        </tbody> <span <tfoot class="bg-gray-50/80 font-semibold">
+            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+
+                            <tr>                                        {{ $f->method == 'cash' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' }}">
+
+            <td colspan="4" class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">Final Totals</td>
+            {{ $f->method == 'cash' ? '💵 Cash' : '📱 GPay' }}
+
+            <td class="px-3 py-2 text-xs text-right text-green-600 whitespace-nowrap">
+                ₹{{ number_format($totalIncome, 2) }}</td>
+        </span>
+
+        <td class="px-3 py-2 text-xs text-right text-red-600 whitespace-nowrap">₹{{ number_format($totalExpense, 2) }}
+        </td>
+        </td>
+
+        <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
+            ₹{{ number_format($finalCashBalance ?? 0, 2) }}</td>
+        <td class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">
+
+        <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
+            ₹{{ number_format($finalGpayBalance ?? 0, 2) }}</td>
+        @if ($f->category)
+
+            <td class="px-3 py-2 text-xs text-right text-gray-900 whitespace-nowrap">
+                ₹{{ number_format($finalBalance, 2) }}</td> <span <td></td>
+                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">
+
+                </tr> {{ $f->category }}
+
+                </tfoot> </span>
+
+            </table>
+        @else
+    </div> <span class="text-gray-400">-</span>
+@else
+@endif
+
+<div class="text-center py-8">
+    </td>
+
+    <i class="fas fa-receipt text-3xl text-gray-300 mb-3"></i>
+    <td class="px-3 py-2 text-xs text-right font-medium text-green-600 whitespace-nowrap">
+
+        <p class="text-gray-500 text-sm">No transactions yet</p>
+        {{ $f->income > 0 ? '₹' . number_format($f->income, 2) : '-' }}
+
+        <p class="text-gray-400 text-xs mt-1">Add your first transaction to get started!</p>
+    </td>
+
+</div>
+<td class="px-3 py-2 text-xs text-right font-medium text-red-600 whitespace-nowrap">
+
+    @endif {{ $f->expense > 0 ? '₹' . number_format($f->expense, 2) : '-' }}
+
+    </div>
+</td>
+
+</div>
+<td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
+
+    ₹{{ number_format($f->cash_balance, 2) }}</td>
+
+@push('styles') <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
+
+        <style>
+            ₹{{ number_format($f->gpay_balance, 2) }}</td>@media (max-width: 768px) {
+                <td class="px-3 py-2 text-xs text-right font-semibold text-gray-900 whitespace-nowrap">.overflow-x-auto {
+                    ₹{{ number_format($f->balance, 2) }}</td>-webkit-overflow-scrolling: touch;
+                    <td class="px-3 py-2 text-xs text-right whitespace-nowrap">
+                }
+
+                <div class="flex justify-end space-x-1">table {
+                    <a href="{{ route('finances.edit', $f->id) }}" font-size: 0.75rem;
+                    class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors">
+                }
+
+                <i class="fas fa-edit mr-1"></i>Edit .finance-row td {
+                    </a>padding: 0.5rem 0.25rem;
+                    <form method="POST" action="{{ route('finances.destroy', $f->id) }}"
+                }
+
+                onsubmit="return confirm('Are you sure you want to delete this entry?')"
+            }
+
+            class="inline">@csrf .overflow-x-auto {
+                @method('DELETE')
+
+                overflow-x: auto;
+                <button type="submit" width: 100%;
+                class="inline-flex items-center px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200 transition-colors">
+            }
+
+            <i class="fas fa-trash mr-1"></i>Delete </button>@media (max-width: 640px) {
+                </form>.stats-card {
+                    </div>padding: 0.75rem;
+                    </td>
+                }
+
+                </tr>.stats-card p.text-xl {@endforeach
+
+                font-size: 1.125rem;
+                </tbody>
+            }
+
+            <tfoot class="bg-gray-50/80 font-semibold">.glass-effect {
+                <tr>padding: 1rem;
+                <td colspan="4" class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">Final Totals
+            }
+
+            </td>
+            }
+
+            <td class="px-3 py-2 text-xs text-right text-green-600 whitespace-nowrap">₹{{ number_format($totalIncome, 2) }}</td>.errors {
+                <td class="px-3 py-2 text-xs text-right text-red-600 whitespace-nowrap">background: #fff5f5;
+                ₹{{ number_format($totalExpense, 2) }}</td>border: 1px solid rgba(239, 68, 68, 0.12);
+                <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">color: #ef4444;
+                ₹{{ number_format($finalCashBalance ?? 0, 2) }}</td>padding: 10px;
+                <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">border-radius: 6px;
+                ₹{{ number_format($finalGpayBalance ?? 0, 2) }}</td>margin-bottom: 12px;
+                <td class="px-3 py-2 text-xs text-right text-gray-900 whitespace-nowrap">
+            }
+
+            ₹{{ number_format($finalBalance, 2) }}</td><td></td>.errors li {
+                </tr>list-style: disc;
+                </tfoot>margin-left: 20px;
+                </table>
+            }
+
+            </div>
+        </style>
+    @else
+    @endpush <div class="text-center py-8">
+
+        <i class="fas fa-receipt text-3xl text-gray-300 mb-3"></i>
+
+        @push('scripts') <p class="text-gray-500 text-sm">No transactions yet</p>
+
+            <script>
+                < p class = "text-gray-400 text-xs mt-1" > Add your first transaction to get started! < /p>
+
+                document.addEventListener('DOMContentLoaded', function() {
+                            < /div>
+
+                            // Auto-format currency inputs        @endif
+
+                            const incomeInput = document.querySelector('input[name="income"]'); < /div>
+
+                            const expenseInput = document.querySelector('input[name="expense"]'); < /div>
+
+                            const amountInput = document.querySelector('input[name="amount"]');
+
+                            @push('styles')
+
+                                function formatCurrencyInput(input) {
+                                    < style >
+
+                                        input.addEventListener('blur', function() {
+                                                @media(max - width: 768 px) {
+
+                                                    if (this.value) {
+                                                        .overflow - x - auto {
+
+                                                            this.value = parseFloat(this.value).toFixed(2); - webkit -
+                                                                overflow - scrolling: touch;
+
+                                                        }
+                                                    }
+
+                                                });
+
+                                        }
+                                    table {
+
+                                        font - size: 0.75 rem;
+
+                                        if (incomeInput) formatCurrencyInput(incomeInput);
+                                    }
+
+                                    if (expenseInput) formatCurrencyInput(expenseInput);
+
+                                    if (amountInput) formatCurrencyInput(amountInput);.finance - row td {
+
+                                        padding: 0.5 rem 0.25 rem;
+
+                                        // Ensure only one of income/expense is filled                }
+
+                                        function validateAmounts() {}
+
+                                        if (incomeInput && expenseInput) {
+
+                                            if (incomeInput.value && expenseInput.value) {
+                                                /* Ensure table is properly scrollable on mobile */
+
+                                                expenseInput.value = '';.overflow - x - auto {
+
+                                                }
+                                                overflow - x: auto;
+
+                                            }
+                                            width: 100 % ;
+
+                                        }
+                                    }
+
+
+
+                                    if (incomeInput) incomeInput.addEventListener('input',
+                                    validateAmounts); /* Fix for small screens */
+
+                                    if (expenseInput) expenseInput.addEventListener('input', validateAmounts);
+                                    @media(max - width: 640 px) {
+
+                                    });.stats - card {
+            </script> padding: 0.75rem;
+
+            }
+
+            <script>
+                // Handle form submission validation and sync duplicate form controls                .stats-card p.text-xl {
+
+                document.addEventListener('DOMContentLoaded', function() {
+                        font - size: 1.125 rem;
+
+                        const form = document.getElementById('add-transaction-form');
+                    }
+
+                    if (!form) return;
+
+                    .glass - effect {
+
+                        const income = form.querySelector('input[name="income"]');
+                        padding: 1 rem;
+
+                        const expense = form.querySelector('input[name="expense"]');
+                    }
+
+                    const method = form.querySelector('select[name="method"]');
+                }
+
+                const errorDiv = document.getElementById('form-error');
+
+                .errors {
+
+                    // Robustly sync duplicate inputs (mobile + desktop) to disable hidden ones                background: #fff5f5;
+
+                    function isVisible(el) {
+                        border: 1 px solid rgba(239, 68, 68, 0.12);
+
+                        if (!el || el.type === 'hidden') return false;color: var (--danger);
+
+                        const style = window.getComputedStyle(el);padding: 10 px;
+
+                        if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0')
+                        return false;border - radius: 6 px;
+
+                        const rects = el.getClientRects();margin - bottom: 12 px
+
+                        return rects.length > 0 && rects[0].width > 0 && rects[0].height > 0;
+                    }
+
+                } < /style>
+                @endpush
+
+                function syncFormControls() {
+
+                    const named = {};
+                    @push('scripts')
+
+                        form.querySelectorAll('input[name],select[name],textarea[name]').forEach(el => {
+                                    < script >
+
+                                        if (el.type === 'hidden' || el.matches('button,input[type="submit"]')) return;
+                                    document.addEventListener('DOMContentLoaded', function() {
+
+                                        const name = el.getAttribute('name'); // Auto-format currency inputs
+
+                                        if (!name) return;
+                                        const incomeInput = document.querySelector('input[name="income"]');
+
+                                        named[name] = named[name] || [];
+                                        const expenseInput = document.querySelector('input[name="expense"]');
+
+                                        named[name].push(el);
+                                        const amountInput = document.querySelector('input[name="amount"]');
+
+                                    });
+
+                                    function formatCurrencyInput(input) {
+
+                                        Object.keys(named).forEach(name => {
+                                                input.addEventListener('blur', function() {
+
+                                                        const group = named[name];
+                                                        if (this.value) {
+
+                                                            const visible = group.find(isVisible) || group[0];
+                                                            this.value = parseFloat(this.value).toFixed(2);
+
+                                                            group.forEach(el => {}
+
+                                                                if (el === visible) {});
+
+                                                            el.removeAttribute('disabled');
+                                                        }
+
+                                                    } else {
+
+                                                        el.setAttribute('disabled', 'disabled');
+                                                        if (incomeInput) formatCurrencyInput(incomeInput);
+
+                                                    }
+                                                    if (expenseInput) formatCurrencyInput(expenseInput);
+
+                                                });
+                                            if (amountInput) formatCurrencyInput(amountInput);
+
+                                        });
+
+                                } // Ensure only one of income/expense is filled
+
+                                function validateAmounts() {
+
+                                    // Initial sync                    if (incomeInput && expenseInput) {
+
+                                    syncFormControls();
+                                    if (incomeInput.value && expenseInput.value) {
+
+                                        expenseInput.value = '';
+
+                                        // Re-sync on resize and orientation change                        }
+
+                                        let resizeTimer;
+                                    }
+
+                                    window.addEventListener('resize', function() {}
+
+                                        clearTimeout(resizeTimer);
+
+                                        resizeTimer = setTimeout(syncFormControls, 120);
+                                        if (incomeInput) incomeInput.addEventListener('input', validateAmounts);
+
+                                    });
+                                if (expenseInput) expenseInput.addEventListener('input', validateAmounts);
+
+                                window.addEventListener('orientationchange', function() {});
+
+                                setTimeout(syncFormControls, 150);
+            </script>
+
+        }); @endpush
+
+    @endsection
+
+    // Validate on submit
+
+    form.addEventListener('submit', function(e) {@push('scripts')
+
+        if (errorDiv) {
+        <script>
+            errorDiv.style.display = 'none';
+            document.addEventListener('DOMContentLoaded', function() {
+
+                errorDiv.innerHTML = '';
+                const form = document.getElementById('add-transaction-form');
+
+            }
+            if (!form) return;
 
             const income = form.querySelector('input[name="income"]');
 
-                    if (method && !method.value) {            const expense = form.querySelector('input[name="expense"]');
+            if (method && !method.value) {
+                const expense = form.querySelector('input[name="expense"]');
 
-                        e.preventDefault();            const method = form.querySelector('select[name="method"]');
+                e.preventDefault();
+                const method = form.querySelector('select[name="method"]');
 
-                        if (errorDiv) {            const errorDiv = document.getElementById('form-error');
+                if (errorDiv) {
+                    const errorDiv = document.getElementById('form-error');
 
-                            errorDiv.style.display = 'block';
+                    errorDiv.style.display = 'block';
 
-                            errorDiv.innerHTML = '<ul><li>Please select a payment method.</li></ul>';            form.addEventListener('submit', function(e) {
+                    errorDiv.innerHTML = '<ul><li>Please select a payment method.</li></ul>';
+                    form.addEventListener('submit', function(e) {
 
-                        }                // Clear previous error
+                        } // Clear previous error
 
-                        return false;                if (errorDiv) {
+                        return false;
+                        if (errorDiv) {
 
-                    }                    errorDiv.style.display = 'none';
+                        }
+                        errorDiv.style.display = 'none';
 
-                    errorDiv.innerHTML = '';
+                        errorDiv.innerHTML = '';
 
-                    const inc = parseFloat(income?.value || 0);                }
+                        const inc = parseFloat(income?.value || 0);
+                    }
 
                     const exp = parseFloat(expense?.value || 0);
 
-                    if ((!inc || inc <= 0) && (!exp || exp <= 0)) {                // Ensure method selected
+                    if ((!inc || inc <= 0) && (!exp || exp <= 0)) { // Ensure method selected
 
-                        e.preventDefault();                if (method && !method.value) {
+                        e.preventDefault();
+                        if (method && !method.value) {
 
-                        if (errorDiv) {                    e.preventDefault();
+                            if (errorDiv) {
+                                e.preventDefault();
 
-                            errorDiv.style.display = 'block';                    if (errorDiv) {
+                                errorDiv.style.display = 'block';
+                                if (errorDiv) {
 
-                            errorDiv.innerHTML = '<ul><li>Enter an amount for Income or Expense.</li></ul>';                        errorDiv.style.display = 'block';
+                                    errorDiv.innerHTML = '<ul><li>Enter an amount for Income or Expense.</li></ul>';
+                                    errorDiv.style.display = 'block';
 
-                        }                        errorDiv.innerText = 'Please select a payment method.';
+                                }
+                                errorDiv.innerText = 'Please select a payment method.';
 
-                        return false;                    }
+                                return false;
+                            }
 
-                    }                    return false;
+                        }
+                        return false;
 
-                });                }
+                    });
+            }
 
             });
+        </script> const inc = parseFloat(income?.value || 0);
 
-        </script>                const inc = parseFloat(income?.value || 0);
+    @endpush const exp = parseFloat(expense?.value || 0);
 
-    @endpush                const exp = parseFloat(expense?.value || 0);
-
-@endsection                if ((!inc || inc <= 0) && (!exp || exp <= 0)) {
-
-                    e.preventDefault();
-                    if (errorDiv) {
-                        errorDiv.style.display = 'block';
-                        errorDiv.innerText = 'Enter an amount for Income or Expense.';
-                    }
-                    return false;
-                }
-            });
-        });
-    </script>
+@endsection if ((!inc || inc <= 0) && (!exp || exp <=0)) { e.preventDefault(); if (errorDiv) {
+    errorDiv.style.display = 'block'; errorDiv.innerText = 'Enter an amount for Income or Expense.'; } return
+    false; } }); }); </script>
     <script>
         // Prevent "An invalid form control is not focusable" caused by duplicate
         // inputs used for responsive layouts (mobile + desktop variants).
