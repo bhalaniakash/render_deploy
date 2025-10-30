@@ -531,4 +531,55 @@
             });
         });
     </script>
+    <script>
+        // Prevent "An invalid form control is not focusable" caused by duplicate
+        // inputs used for responsive layouts (mobile + desktop variants).
+        // We disable controls that aren't visible so browser validation ignores them.
+        (function() {
+            function isVisible(el) {
+                if (!el) return false;
+                // hidden inputs (like _token) should not be disabled
+                if (el.type === 'hidden') return true;
+                const rects = el.getClientRects();
+                if (rects.length === 0) return false;
+                const style = window.getComputedStyle(el);
+                return style.visibility !== 'hidden' && style.display !== 'none' && rects[0].width > 0 && rects[0]
+                    .height > 0;
+            }
+
+            function syncFormControls(form) {
+                if (!form) return;
+                const controls = form.querySelectorAll('input, select, textarea');
+                controls.forEach(control => {
+                    // never disable hidden fields (csrf token etc.)
+                    if (control.type === 'hidden') {
+                        control.removeAttribute('disabled');
+                        return;
+                    }
+                    // don't touch submit buttons here
+                    if (control.matches('button,input[type="submit"]')) return;
+
+                    if (isVisible(control)) {
+                        control.removeAttribute('disabled');
+                    } else {
+                        control.setAttribute('disabled', 'disabled');
+                    }
+                });
+            }
+
+            const addForm = document.getElementById('add-transaction-form');
+            if (addForm) {
+                // initial sync
+                syncFormControls(addForm);
+                // re-sync on resize (debounced)
+                let t = null;
+                window.addEventListener('resize', function() {
+                    clearTimeout(t);
+                    t = setTimeout(function() {
+                        syncFormControls(addForm);
+                    }, 120);
+                });
+            }
+        })();
+    </script>
 @endpush
