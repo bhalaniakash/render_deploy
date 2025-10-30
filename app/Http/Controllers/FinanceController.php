@@ -14,12 +14,20 @@ class FinanceController extends Controller
 
         $finances = Finance::where('user_id', $user->id)->orderBy('date', 'asc')->orderBy('id','asc')->get();
 
-        // Calculate totals and running balance (if balance stored, prefer stored value)
+        // Calculate totals and per-method totals
         $totalIncome = $finances->sum('income');
         $totalExpense = $finances->sum('expense');
-        $finalBalance = $finances->last()?->balance ?? ($totalIncome - $totalExpense);
 
-        return view('finance.index', compact('finances', 'totalIncome', 'totalExpense', 'finalBalance'));
+        $totalCashIncome = $finances->where('method','cash')->sum('income');
+        $totalGpayIncome = $finances->where('method','gpay')->sum('income');
+        $totalCashExpense = $finances->where('method','cash')->sum('expense');
+        $totalGpayExpense = $finances->where('method','gpay')->sum('expense');
+
+        $finalCashBalance = $finances->last()?->cash_balance ?? ($totalCashIncome - $totalCashExpense);
+        $finalGpayBalance = $finances->last()?->gpay_balance ?? ($totalGpayIncome - $totalGpayExpense);
+        $finalBalance = $finalCashBalance + $finalGpayBalance;
+
+        return view('finance.index', compact('finances', 'totalIncome', 'totalExpense', 'finalBalance', 'totalCashIncome', 'totalGpayIncome', 'totalCashExpense', 'totalGpayExpense', 'finalCashBalance', 'finalGpayBalance'));
     }
 
     public function store(Request $request)
@@ -30,6 +38,8 @@ class FinanceController extends Controller
             // date must not be in the future
             'date' => 'required|date|before_or_equal:today',
             'description' => 'required|string|max:255',
+            'method' => 'required|in:cash,gpay',
+            'category' => 'nullable|string|max:100',
             'income' => 'nullable|numeric|min:0',
             'expense' => 'nullable|numeric|min:0',
         ]);
@@ -51,9 +61,13 @@ class FinanceController extends Controller
             'user_id' => $user->id,
             'date' => $data['date'],
             'description' => $data['description'],
+            'method' => $data['method'],
+            'category' => $data['category'] ?? null,
             'income' => $income,
             'expense' => $expense,
             'balance' => $newBalance,
+            'cash_balance' => 0,
+            'gpay_balance' => 0,
         ]);
 
         // Recompute balances to ensure all rows are consistent
@@ -79,6 +93,8 @@ class FinanceController extends Controller
         $data = $request->validate([
             'date' => 'required|date|before_or_equal:today',
             'description' => 'required|string|max:255',
+            'method' => 'required|in:cash,gpay',
+            'category' => 'nullable|string|max:100',
             'income' => 'nullable|numeric|min:0',
             'expense' => 'nullable|numeric|min:0',
         ]);
@@ -93,6 +109,8 @@ class FinanceController extends Controller
         $entry->update([
             'date' => $data['date'],
             'description' => $data['description'],
+            'method' => $data['method'],
+            'category' => $data['category'] ?? null,
             'income' => $income,
             'expense' => $expense,
         ]);
@@ -119,6 +137,7 @@ class FinanceController extends Controller
 
         $data = $request->validate([
             'amount' => 'required|numeric',
+            'method' => 'required|in:cash,gpay',
             'date' => 'nullable|date|before_or_equal:today',
         ]);
 
@@ -130,9 +149,13 @@ class FinanceController extends Controller
             'user_id' => $user->id,
             'date' => $date,
             'description' => 'Opening balance',
+            'method' => $data['method'],
+            'category' => 'opening',
             'income' => $amount > 0 ? $amount : 0,
             'expense' => $amount < 0 ? abs($amount) : 0,
             'balance' => $amount,
+            'cash_balance' => 0,
+            'gpay_balance' => 0,
         ]);
 
         $this->recomputeBalances($user->id);
@@ -144,10 +167,19 @@ class FinanceController extends Controller
     protected function recomputeBalances($userId)
     {
         $rows = Finance::where('user_id', $userId)->orderBy('date', 'asc')->orderBy('id','asc')->get();
-        $bal = 0;
+        $cash = 0.0;
+        $gpay = 0.0;
         foreach ($rows as $r) {
-            $bal = $bal + (float)$r->income - (float)$r->expense;
-            $r->balance = $bal;
+            // apply to the appropriate method balance
+            if ($r->method === 'cash') {
+                $cash = $cash + (float)$r->income - (float)$r->expense;
+            } else {
+                $gpay = $gpay + (float)$r->income - (float)$r->expense;
+            }
+
+            $r->cash_balance = $cash;
+            $r->gpay_balance = $gpay;
+            $r->balance = $cash + $gpay;
             $r->save();
         }
     }

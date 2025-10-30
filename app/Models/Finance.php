@@ -13,9 +13,13 @@ class Finance extends Model
         'user_id',
         'date',
         'description',
+        'method',
+        'category',
         'income',
         'expense',
         'balance',
+        'cash_balance',
+        'gpay_balance',
     ];
 
     protected $casts = [
@@ -23,6 +27,8 @@ class Finance extends Model
         'income' => 'decimal:2',
         'expense' => 'decimal:2',
         'balance' => 'decimal:2',
+        'cash_balance' => 'decimal:2',
+        'gpay_balance' => 'decimal:2',
     ];
 
     public function user()
