@@ -5,21 +5,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', config('app.name', 'Finance Manager'))</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <script>
         tailwind.config = {
             theme: {
@@ -46,7 +47,7 @@
             }
         }
     </script>
-    
+
     <style>
         :root {
             --primary: #6366f1;
@@ -103,19 +104,44 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         @keyframes bounceIn {
-            0% { opacity: 0; transform: scale(0.8); }
-            50% { opacity: 1; transform: scale(1.05); }
-            100% { opacity: 1; transform: scale(1); }
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scale(1.05);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
 
         .floating-shapes {
@@ -163,11 +189,25 @@
         }
 
         @keyframes float {
-            0% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(30px, 30px) rotate(90deg); }
-            50% { transform: translate(0, 60px) rotate(180deg); }
-            75% { transform: translate(-30px, 30px) rotate(270deg); }
-            100% { transform: translate(0, 0) rotate(360deg); }
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            25% {
+                transform: translate(30px, 30px) rotate(90deg);
+            }
+
+            50% {
+                transform: translate(0, 60px) rotate(180deg);
+            }
+
+            75% {
+                transform: translate(-30px, 30px) rotate(270deg);
+            }
+
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+            }
         }
 
         .input-focus:focus {
@@ -226,7 +266,8 @@
                                 <span class="text-sm">Welcome, {{ Auth::user()->name }}</span>
                                 <form method="POST" action="{{ route('logout') }}" class="inline">
                                     @csrf
-                                    <button type="submit" class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg transition-colors">
+                                    <button type="submit"
+                                        class="text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-lg transition-colors">
                                         Logout
                                     </button>
                                 </form>
@@ -254,8 +295,14 @@
             // Add loading states to buttons
             document.addEventListener('submit', function(e) {
                 const form = e.target;
+
+                // Let browser show native validation errors first
+                if (!form.checkValidity()) {
+                    return; // don't set processing state
+                }
+
                 const button = form.querySelector('button[type="submit"]');
-                
+
                 if (button && !form.dataset.processing) {
                     form.dataset.processing = 'true';
                     const originalText = button.innerHTML;
@@ -264,7 +311,7 @@
                         Processing...
                     `;
                     button.disabled = true;
-                    
+
                     // Revert after 5 seconds if still processing (fallback)
                     setTimeout(() => {
                         if (form.dataset.processing) {
@@ -282,11 +329,12 @@
                 input.addEventListener('focus', function() {
                     this.parentElement.classList.add('ring-2', 'ring-primary', 'ring-opacity-20');
                 });
-                
+
                 input.addEventListener('blur', function() {
-                    this.parentElement.classList.remove('ring-2', 'ring-primary', 'ring-opacity-20');
+                    this.parentElement.classList.remove('ring-2', 'ring-primary',
+                    'ring-opacity-20');
                     this.classList.remove('border-red-500', 'border-green-500');
-                    
+
                     if (this.value) {
                         if (this.checkValidity()) {
                             this.classList.add('border-green-500');
@@ -303,7 +351,7 @@
                 if (form && form.dataset.validate === 'password-match') {
                     const password = form.querySelector('input[name="password"]');
                     const confirm = form.querySelector('input[name="password_confirmation"]');
-                    
+
                     if (password && confirm && confirm.value) {
                         if (password.value !== confirm.value) {
                             confirm.setCustomValidity('Passwords do not match');
@@ -339,7 +387,7 @@
                     </div>
                 `;
                 document.body.appendChild(toast);
-                
+
                 setTimeout(() => {
                     toast.remove();
                 }, 3000);
