@@ -15,153 +15,94 @@
         @endif
 
         @if ($errors->any())
-            <div class="errors">
-                <ul>
-                    @foreach ($errors->all() as $err)
-                        <li>{{ $err }}</li>
-                    @endforeach
-                </ul>
+            <script>
+                // Robustly pick the visible control when there are duplicate inputs
+                // (mobile + desktop variants). For each named control group we enable
+                // only the visible instance so browser validation targets a focusable
+                // element. Hidden inputs (like CSRF token) are left untouched.
+                (function() {
+                    function isVisible(el) {
+                        if (!el) return false;
+                        if (el.type === 'hidden') return false; // treat hidden as not visible for selection
+                        const style = window.getComputedStyle(el);
+                        if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return false;
+                        const rects = el.getClientRects();
+                        return rects.length > 0 && rects[0].width > 0 && rects[0].height > 0;
+                    }
+
+                    function syncFormControls(form) {
+                        if (!form) return;
+                        const named = {};
+                        form.querySelectorAll('input[name],select[name],textarea[name]').forEach(el => {
+                            // never touch true hidden inputs (csrf etc.)
+                            if (el.type === 'hidden') return;
+                            if (el.matches('button,input[type="submit"],input[type="button"]')) return;
+                            const name = el.getAttribute('name');
+                            if (!name) return;
+                            named[name] = named[name] || [];
+                            named[name].push(el);
+                        });
+
+                        Object.keys(named).forEach(name => {
+                            const group = named[name];
+                            // find a visible control; if none visible, use the first one
+                            const visible = group.find(isVisible) || group[0];
+                            group.forEach(el => {
+                                if (el === visible) {
+                                    el.removeAttribute('disabled');
+                                } else {
+                                    el.setAttribute('disabled', 'disabled');
+                                }
+                            });
+                        });
+                    }
+
+                    const addForm = document.getElementById('add-transaction-form');
+                    if (addForm) {
+                        // initial sync
+                        syncFormControls(addForm);
+
+                        // re-sync on resize/orientation change (debounced)
+                        let t = null;
+                        window.addEventListener('resize', function() {
+                            clearTimeout(t);
+                            t = setTimeout(function() {
+                                syncFormControls(addForm);
+                            }, 120);
+                        });
+                        window.addEventListener('orientationchange', function() {
+                            setTimeout(function() {
+                                syncFormControls(addForm);
+                            }, 150);
+                        });
+                    }
+                })();
+            </script>
+            <div>
+                <p class="text-gray-600 text-xs font-medium">Net Savings</p>
+                <p class="text-xl font-bold text-gray-800">₹{{ number_format($totalIncome - $totalExpense, 2) }}</p>
             </div>
-        @endif
-        <!-- Quick Stats -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div class="stats-card rounded-xl p-4 shadow-lg">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-xs font-medium">Total Balance</p>
-                        <p class="text-xl font-bold text-gray-800">₹{{ number_format($finalBalance, 2) }}</p>
-                    </div>
-                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-wallet text-blue-600 text-lg"></i>
-                    </div>
-                </div>
+            <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-piggy-bank text-yellow-600 text-lg"></i>
             </div>
+    </div>
+    </div>
+    </div>
 
-            <div class="stats-card rounded-xl p-4 shadow-lg" style="border-left-color: #10b981;">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-xs font-medium">Total Income</p>
-                        <p class="text-xl font-bold text-gray-800">₹{{ number_format($totalIncome, 2) }}</p>
-                    </div>
-                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-arrow-up text-green-600 text-lg"></i>
-                    </div>
-                </div>
-            </div>
+    <!-- Add Entry Form -->
+    <div class="glass-effect rounded-xl p-4 md:p-6 mb-6 card-hover">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-plus-circle text-primary mr-2"></i>
+            Add New Transaction
+        </h3>
 
-            <div class="stats-card rounded-xl p-4 shadow-lg" style="border-left-color: #ef4444;">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-xs font-medium">Total Expense</p>
-                        <p class="text-xl font-bold text-gray-800">₹{{ number_format($totalExpense, 2) }}</p>
-                    </div>
-                    <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-arrow-down text-red-600 text-lg"></i>
-                    </div>
-                </div>
-            </div>
+        <form id="add-transaction-form" method="POST" action="{{ route('finances.store') }}" class="space-y-4">
+            @csrf
+            <div id="form-error" style="display:none" class="errors"></div>
 
-            <div class="stats-card rounded-xl p-4 shadow-lg" style="border-left-color: #f59e0b;">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-600 text-xs font-medium">Net Savings</p>
-                        <p class="text-xl font-bold text-gray-800">₹{{ number_format($totalIncome - $totalExpense, 2) }}</p>
-                    </div>
-                    <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-piggy-bank text-yellow-600 text-lg"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Add Entry Form -->
-        <div class="glass-effect rounded-xl p-4 md:p-6 mb-6 card-hover">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                <i class="fas fa-plus-circle text-primary mr-2"></i>
-                Add New Transaction
-            </h3>
-
-            <form id="add-transaction-form" method="POST" action="{{ route('finances.store') }}" class="space-y-4">
-                @csrf
-                <div id="form-error" style="display:none" class="errors"></div>
-
-                <!-- Mobile Layout (Stacked) -->
-                <div class="block md:hidden space-y-4">
-                    <div class="grid grid-cols-1 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                            <input type="date" name="date" max="{{ now()->toDateString() }}"
-                                value="{{ old('date', now()->toDateString()) }}"
-                                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
-                                required>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                            <input type="text" name="description" value="{{ old('description') }}"
-                                placeholder="e.g. Lunch at Restaurant"
-                                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
-                                required>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>
-                            <select name="method"
-                                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
-                                required>
-                                <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>💵 Cash</option>
-                                <option value="gpay" {{ old('method') == 'gpay' ? 'selected' : '' }}>📱 GPay</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                            <select name="category"
-                                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
-                                <option value="">Select</option>
-                                <option value="Food" {{ old('category') == 'Food' ? 'selected' : '' }}>🍔 Food</option>
-                                <option value="Shopping" {{ old('category') == 'Shopping' ? 'selected' : '' }}>🛍️ Shopping
-                                </option>
-                                <option value="Transport" {{ old('category') == 'Transport' ? 'selected' : '' }}>🚗
-                                    Transport</option>
-                                <option value="Entertainment" {{ old('category') == 'Entertainment' ? 'selected' : '' }}>🎬
-                                    Entertainment</option>
-                                <option value="Bills" {{ old('category') == 'Bills' ? 'selected' : '' }}>📄 Bills</option>
-                                <option value="Salary" {{ old('category') == 'Salary' ? 'selected' : '' }}>💰 Salary
-                                </option>
-                                <option value="Other" {{ old('category') == 'Other' ? 'selected' : '' }}>📦 Other</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Income</label>
-                            <input type="number" step="0.01" name="income" value="{{ old('income') }}"
-                                placeholder="0.00"
-                                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Expense</label>
-                            <input type="number" step="0.01" name="expense" value="{{ old('expense') }}"
-                                placeholder="0.00"
-                                class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
-                        </div>
-                    </div>
-
-                    <div>
-                        <button type="submit"
-                            class="w-full btn-primary text-white py-2 px-4 rounded-lg font-semibold transition-all text-sm">
-                            <i class="fas fa-plus mr-1"></i> Add Transaction
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Desktop Layout (Grid) -->
-                <div class="hidden md:grid md:grid-cols-7 gap-3 items-end">
+            <!-- Mobile Layout (Stacked) -->
+            <div class="block md:hidden space-y-4">
+                <div class="grid grid-cols-1 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
                         <input type="date" name="date" max="{{ now()->toDateString() }}"
@@ -170,14 +111,16 @@
                             required>
                     </div>
 
-                    <div class="col-span-2">
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
                         <input type="text" name="description" value="{{ old('description') }}"
                             placeholder="e.g. Lunch at Restaurant"
                             class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
                             required>
                     </div>
+                </div>
 
+                <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>
                         <select name="method"
@@ -196,215 +139,274 @@
                             <option value="Food" {{ old('category') == 'Food' ? 'selected' : '' }}>🍔 Food</option>
                             <option value="Shopping" {{ old('category') == 'Shopping' ? 'selected' : '' }}>🛍️ Shopping
                             </option>
-                            <option value="Transport" {{ old('category') == 'Transport' ? 'selected' : '' }}>🚗 Transport
-                            </option>
+                            <option value="Transport" {{ old('category') == 'Transport' ? 'selected' : '' }}>🚗
+                                Transport</option>
                             <option value="Entertainment" {{ old('category') == 'Entertainment' ? 'selected' : '' }}>🎬
                                 Entertainment</option>
                             <option value="Bills" {{ old('category') == 'Bills' ? 'selected' : '' }}>📄 Bills</option>
-                            <option value="Salary" {{ old('category') == 'Salary' ? 'selected' : '' }}>💰 Salary</option>
+                            <option value="Salary" {{ old('category') == 'Salary' ? 'selected' : '' }}>💰 Salary
+                            </option>
                             <option value="Other" {{ old('category') == 'Other' ? 'selected' : '' }}>📦 Other</option>
                         </select>
                     </div>
+                </div>
 
+                <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Income</label>
-                        <input type="number" step="0.01" name="income" value="{{ old('income') }}"
-                            placeholder="0.00"
+                        <input type="number" step="0.01" name="income" value="{{ old('income') }}" placeholder="0.00"
                             class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
                     </div>
 
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Expense</label>
-                        <input type="number" step="0.01" name="expense" value="{{ old('expense') }}"
-                            placeholder="0.00"
+                        <input type="number" step="0.01" name="expense" value="{{ old('expense') }}" placeholder="0.00"
                             class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
                     </div>
-
-                    <div>
-                        <button type="submit"
-                            class="w-full btn-primary text-white py-2 px-3 rounded-lg font-semibold transition-all text-sm">
-                            <i class="fas fa-plus mr-1"></i> Add
-                        </button>
-                    </div>
                 </div>
-            </form>
-        </div>
 
-        <!-- Opening Balance Card -->
-        <div class="glass-effect rounded-xl p-4 md:p-6 mb-6 card-hover">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                <i class="fas fa-balance-scale text-primary mr-2"></i>
-                Set Opening Balance
-            </h3>
-
-            <form method="POST" action="{{ route('finances.opening') }}"
-                class="space-y-3 md:space-y-0 md:flex md:items-end md:gap-4">
-                @csrf
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:flex-1">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
-                        <input type="number" step="0.01" name="amount" placeholder="0.00"
-                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>
-                        <select name="method"
-                            class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
-                            required>
-                            <option value="cash">💵 Cash</option>
-                            <option value="gpay">📱 GPay</option>
-                        </select>
-                    </div>
-
-                    <div class="md:flex md:items-end">
-                        <button type="submit"
-                            class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-semibold transition-all text-sm">
-                            <i class="fas fa-save mr-1"></i>Set Balance
-                        </button>
-                    </div>
-                </div>
-            </form>
-            <p class="text-gray-600 text-xs mt-3">
-                💡 Set opening balance (positive for income, negative for expense)
-            </p>
-        </div>
-
-        <!-- Transactions Table -->
-        <div class="glass-effect rounded-xl p-4 md:p-6 card-hover">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-800 flex items-center mb-2 sm:mb-0">
-                    <i class="fas fa-list-alt text-primary mr-2"></i>
-                    Transaction History
-                </h3>
-                <div class="text-sm text-gray-600">
-                    Total Records: {{ $finances->count() }}
+                <div>
+                    <button type="submit"
+                        class="w-full btn-primary text-white py-2 px-4 rounded-lg font-semibold transition-all text-sm">
+                        <i class="fas fa-plus mr-1"></i> Add Transaction
+                    </button>
                 </div>
             </div>
 
-            @if ($finances->count() > 0)
-                <div class="overflow-x-auto rounded-lg">
-                    <table class="w-full min-w-full">
-                        <thead>
-                            <tr class="bg-gray-50/80">
-                                <th
-                                    class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                    Date</th>
-                                <th
-                                    class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                    Description</th>
-                                <th
-                                    class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                    Method</th>
-                                <th
-                                    class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                    Category</th>
-                                <th
-                                    class="px-3 py-2 text-right text-xs font-semibold text-green-600 uppercase tracking-wider">
-                                    Income</th>
-                                <th
-                                    class="px-3 py-2 text-right text-xs font-semibold text-red-600 uppercase tracking-wider">
-                                    Expense</th>
-                                <th
-                                    class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                    Cash Bal</th>
-                                <th
-                                    class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                    GPay Bal</th>
-                                <th
-                                    class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                    Total Bal</th>
-                                <th
-                                    class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                                    Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            @foreach ($finances as $f)
-                                <tr class="finance-row table-row-hover transition-all duration-200 hover:bg-blue-50/50">
-                                    <td class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">
-                                        {{ $f->date->format('d/m/Y') }}</td>
-                                    <td class="px-3 py-2 text-xs font-medium text-gray-900 max-w-[120px] truncate"
-                                        title="{{ $f->description }}">
-                                        {{ $f->description }}
-                                    </td>
-                                    <td class="px-3 py-2 text-xs whitespace-nowrap">
-                                        <span
-                                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
-                                        {{ $f->method == 'cash' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' }}">
-                                            {{ $f->method == 'cash' ? '💵 Cash' : '📱 GPay' }}
-                                        </span>
-                                    </td>
-                                    <td class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">
-                                        @if ($f->category)
-                                            <span
-                                                class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">
-                                                {{ $f->category }}
-                                            </span>
-                                        @else
-                                            <span class="text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-3 py-2 text-xs text-right font-medium text-green-600 whitespace-nowrap">
-                                        {{ $f->income > 0 ? '₹' . number_format($f->income, 2) : '-' }}
-                                    </td>
-                                    <td class="px-3 py-2 text-xs text-right font-medium text-red-600 whitespace-nowrap">
-                                        {{ $f->expense > 0 ? '₹' . number_format($f->expense, 2) : '-' }}
-                                    </td>
-                                    <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
-                                        ₹{{ number_format($f->cash_balance, 2) }}</td>
-                                    <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
-                                        ₹{{ number_format($f->gpay_balance, 2) }}</td>
-                                    <td class="px-3 py-2 text-xs text-right font-semibold text-gray-900 whitespace-nowrap">
-                                        ₹{{ number_format($f->balance, 2) }}</td>
-                                    <td class="px-3 py-2 text-xs text-right whitespace-nowrap">
-                                        <div class="flex justify-end space-x-1">
-                                            <a href="{{ route('finances.edit', $f->id) }}"
-                                                class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors">
-                                                <i class="fas fa-edit mr-1"></i> Edit
-                                            </a>
-                                            <form method="POST" action="{{ route('finances.destroy', $f->id) }}"
-                                                onsubmit="return confirm('Are you sure you want to delete this entry?')"
-                                                class="inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                    class="inline-flex items-center px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200 transition-colors">
-                                                    <i class="fas fa-trash mr-1"></i> Delete
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                        <tfoot class="bg-gray-50/80 font-semibold">
-                            <tr>
-                                <td colspan="4" class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">Final Totals
-                                </td>
-                                <td class="px-3 py-2 text-xs text-right text-green-600 whitespace-nowrap">
-                                    ₹{{ number_format($totalIncome, 2) }}</td>
-                                <td class="px-3 py-2 text-xs text-right text-red-600 whitespace-nowrap">
-                                    ₹{{ number_format($totalExpense, 2) }}</td>
-                                <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
-                                    ₹{{ number_format($finalCashBalance ?? 0, 2) }}</td>
-                                <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
-                                    ₹{{ number_format($finalGpayBalance ?? 0, 2) }}</td>
-                                <td class="px-3 py-2 text-xs text-right text-gray-900 whitespace-nowrap">
-                                    ₹{{ number_format($finalBalance, 2) }}</td>
-                                <td></td>
-                            </tr>
-                        </tfoot>
-                    </table>
+            <!-- Desktop Layout (Grid) -->
+            <div class="hidden md:grid md:grid-cols-7 gap-3 items-end">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input type="date" name="date" max="{{ now()->toDateString() }}"
+                        value="{{ old('date', now()->toDateString()) }}"
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
+                        required>
                 </div>
-            @else
-                <div class="text-center py-8">
-                    <i class="fas fa-receipt text-3xl text-gray-300 mb-3"></i>
-                    <p class="text-gray-500 text-sm">No transactions yet</p>
-                    <p class="text-gray-400 text-xs mt-1">Add your first transaction to get started!</p>
+
+                <div class="col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <input type="text" name="description" value="{{ old('description') }}"
+                        placeholder="e.g. Lunch at Restaurant"
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
+                        required>
                 </div>
-            @endif
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>
+                    <select name="method"
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
+                        required>
+                        <option value="cash" {{ old('method') == 'cash' ? 'selected' : '' }}>💵 Cash</option>
+                        <option value="gpay" {{ old('method') == 'gpay' ? 'selected' : '' }}>📱 GPay</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                    <select name="category"
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+                        <option value="">Select</option>
+                        <option value="Food" {{ old('category') == 'Food' ? 'selected' : '' }}>🍔 Food</option>
+                        <option value="Shopping" {{ old('category') == 'Shopping' ? 'selected' : '' }}>🛍️ Shopping
+                        </option>
+                        <option value="Transport" {{ old('category') == 'Transport' ? 'selected' : '' }}>🚗 Transport
+                        </option>
+                        <option value="Entertainment" {{ old('category') == 'Entertainment' ? 'selected' : '' }}>🎬
+                            Entertainment</option>
+                        <option value="Bills" {{ old('category') == 'Bills' ? 'selected' : '' }}>📄 Bills</option>
+                        <option value="Salary" {{ old('category') == 'Salary' ? 'selected' : '' }}>💰 Salary</option>
+                        <option value="Other" {{ old('category') == 'Other' ? 'selected' : '' }}>📦 Other</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Income</label>
+                    <input type="number" step="0.01" name="income" value="{{ old('income') }}" placeholder="0.00"
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Expense</label>
+                    <input type="number" step="0.01" name="expense" value="{{ old('expense') }}"
+                        placeholder="0.00"
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+                </div>
+
+                <div>
+                    <button type="submit"
+                        class="w-full btn-primary text-white py-2 px-3 rounded-lg font-semibold transition-all text-sm">
+                        <i class="fas fa-plus mr-1"></i> Add
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Opening Balance Card -->
+    <div class="glass-effect rounded-xl p-4 md:p-6 mb-6 card-hover">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-balance-scale text-primary mr-2"></i>
+            Set Opening Balance
+        </h3>
+
+        <form method="POST" action="{{ route('finances.opening') }}"
+            class="space-y-3 md:space-y-0 md:flex md:items-end md:gap-4">
+            @csrf
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:flex-1">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+                    <input type="number" step="0.01" name="amount" placeholder="0.00"
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Method</label>
+                    <select name="method"
+                        class="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 input-focus transition-all"
+                        required>
+                        <option value="cash">💵 Cash</option>
+                        <option value="gpay">📱 GPay</option>
+                    </select>
+                </div>
+
+                <div class="md:flex md:items-end">
+                    <button type="submit"
+                        class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg font-semibold transition-all text-sm">
+                        <i class="fas fa-save mr-1"></i>Set Balance
+                    </button>
+                </div>
+            </div>
+        </form>
+        <p class="text-gray-600 text-xs mt-3">
+            💡 Set opening balance (positive for income, negative for expense)
+        </p>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="glass-effect rounded-xl p-4 md:p-6 card-hover">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center mb-2 sm:mb-0">
+                <i class="fas fa-list-alt text-primary mr-2"></i>
+                Transaction History
+            </h3>
+            <div class="text-sm text-gray-600">
+                Total Records: {{ $finances->count() }}
+            </div>
         </div>
+
+        @if ($finances->count() > 0)
+            <div class="overflow-x-auto rounded-lg">
+                <table class="w-full min-w-full">
+                    <thead>
+                        <tr class="bg-gray-50/80">
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Date</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Description</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Method</th>
+                            <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Category</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-green-600 uppercase tracking-wider">
+                                Income</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-red-600 uppercase tracking-wider">
+                                Expense</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Cash Bal</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                GPay Bal</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Total Bal</th>
+                            <th class="px-3 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                                Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        @foreach ($finances as $f)
+                            <tr class="finance-row table-row-hover transition-all duration-200 hover:bg-blue-50/50">
+                                <td class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">
+                                    {{ $f->date->format('d/m/Y') }}</td>
+                                <td class="px-3 py-2 text-xs font-medium text-gray-900 max-w-[120px] truncate"
+                                    title="{{ $f->description }}">
+                                    {{ $f->description }}
+                                </td>
+                                <td class="px-3 py-2 text-xs whitespace-nowrap">
+                                    <span
+                                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium 
+                                        {{ $f->method == 'cash' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800' }}">
+                                        {{ $f->method == 'cash' ? '💵 Cash' : '📱 GPay' }}
+                                    </span>
+                                </td>
+                                <td class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">
+                                    @if ($f->category)
+                                        <span
+                                            class="inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-800">
+                                            {{ $f->category }}
+                                        </span>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
+                                <td class="px-3 py-2 text-xs text-right font-medium text-green-600 whitespace-nowrap">
+                                    {{ $f->income > 0 ? '₹' . number_format($f->income, 2) : '-' }}
+                                </td>
+                                <td class="px-3 py-2 text-xs text-right font-medium text-red-600 whitespace-nowrap">
+                                    {{ $f->expense > 0 ? '₹' . number_format($f->expense, 2) : '-' }}
+                                </td>
+                                <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
+                                    ₹{{ number_format($f->cash_balance, 2) }}</td>
+                                <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
+                                    ₹{{ number_format($f->gpay_balance, 2) }}</td>
+                                <td class="px-3 py-2 text-xs text-right font-semibold text-gray-900 whitespace-nowrap">
+                                    ₹{{ number_format($f->balance, 2) }}</td>
+                                <td class="px-3 py-2 text-xs text-right whitespace-nowrap">
+                                    <div class="flex justify-end space-x-1">
+                                        <a href="{{ route('finances.edit', $f->id) }}"
+                                            class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs hover:bg-blue-200 transition-colors">
+                                            <i class="fas fa-edit mr-1"></i> Edit
+                                        </a>
+                                        <form method="POST" action="{{ route('finances.destroy', $f->id) }}"
+                                            onsubmit="return confirm('Are you sure you want to delete this entry?')"
+                                            class="inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="inline-flex items-center px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200 transition-colors">
+                                                <i class="fas fa-trash mr-1"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot class="bg-gray-50/80 font-semibold">
+                        <tr>
+                            <td colspan="4" class="px-3 py-2 text-xs text-gray-700 whitespace-nowrap">Final Totals
+                            </td>
+                            <td class="px-3 py-2 text-xs text-right text-green-600 whitespace-nowrap">
+                                ₹{{ number_format($totalIncome, 2) }}</td>
+                            <td class="px-3 py-2 text-xs text-right text-red-600 whitespace-nowrap">
+                                ₹{{ number_format($totalExpense, 2) }}</td>
+                            <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
+                                ₹{{ number_format($finalCashBalance ?? 0, 2) }}</td>
+                            <td class="px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">
+                                ₹{{ number_format($finalGpayBalance ?? 0, 2) }}</td>
+                            <td class="px-3 py-2 text-xs text-right text-gray-900 whitespace-nowrap">
+                                ₹{{ number_format($finalBalance, 2) }}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        @else
+            <div class="text-center py-8">
+                <i class="fas fa-receipt text-3xl text-gray-300 mb-3"></i>
+                <p class="text-gray-500 text-sm">No transactions yet</p>
+                <p class="text-gray-400 text-xs mt-1">Add your first transaction to get started!</p>
+            </div>
+        @endif
+    </div>
     </div>
 
     @push('styles')
