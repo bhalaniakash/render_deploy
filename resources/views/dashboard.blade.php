@@ -3,7 +3,7 @@
 @section('title', 'Dashboard')
 
 @section('topright')
-    <a href="/" class="small">Home</a>
+    <a href="/" class="small">Home</a> · <a href="{{ route('finances.index') }}" class="small">Finances</a>
 @endsection
 
 @section('content')
