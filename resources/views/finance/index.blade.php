@@ -6,6 +6,23 @@
 
 @section('content')
     <div class="animate-fade-in">
+        @if (session('success'))
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    showToast(@json(session('success')), 'success');
+                });
+            </script>
+        @endif
+
+        @if ($errors->any())
+            <div class="errors">
+                <ul>
+                    @foreach ($errors->all() as $err)
+                        <li>{{ $err }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         <!-- Quick Stats -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <div class="stats-card rounded-xl p-4 shadow-lg">
@@ -428,7 +445,12 @@
             }
 
             .errors {
-                background:#fff5f5;border:1px solid rgba(239,68,68,0.12);color:var(--danger);padding:10px;border-radius:6px;margin-bottom:12px
+                background: #fff5f5;
+                border: 1px solid rgba(239, 68, 68, 0.12);
+                color: var(--danger);
+                padding: 10px;
+                border-radius: 6px;
+                margin-bottom: 12px
             }
         </style>
     @endpush
