@@ -5,30 +5,50 @@
 @section('content')
     <h2>Finance ledger</h2>
 
-    <form method="POST" action="{{ route('finances.store') }}" style="margin-bottom:18px" data-validate="">
-        @csrf
-        <div style="display:grid;grid-template-columns:140px 1fr 110px 110px 110px;gap:8px;align-items:end">
-            <div>
-                <label>Date</label>
-                <input type="date" name="date" value="{{ old('date', now()->toDateString()) }}" required>
+    <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:18px;flex-wrap:wrap">
+        <form method="POST" action="{{ route('finances.store') }}" style="flex:1;min-width:420px" data-validate="">
+            @csrf
+            <div style="display:grid;grid-template-columns:140px 1fr 110px 110px 110px;gap:8px;align-items:end">
+                <div>
+                    <label>Date</label>
+                    <input type="date" name="date" max="{{ now()->toDateString() }}"
+                        value="{{ old('date', now()->toDateString()) }}" required>
+                </div>
+                <div>
+                    <label>Description</label>
+                    <input type="text" name="description" value="{{ old('description') }}" placeholder="e.g. Lunch"
+                        required>
+                </div>
+                <div>
+                    <label>Income</label>
+                    <input type="text" name="income" value="{{ old('income') }}" placeholder="0.00">
+                </div>
+                <div>
+                    <label>Expense</label>
+                    <input type="text" name="expense" value="{{ old('expense') }}" placeholder="0.00">
+                </div>
+                <div>
+                    <button type="submit">Add</button>
+                </div>
             </div>
-            <div>
-                <label>Description</label>
-                <input type="text" name="description" value="{{ old('description') }}" placeholder="e.g. Lunch" required>
-            </div>
-            <div>
-                <label>Income</label>
-                <input type="text" name="income" value="{{ old('income') }}" placeholder="0.00">
-            </div>
-            <div>
-                <label>Expense</label>
-                <input type="text" name="expense" value="{{ old('expense') }}" placeholder="0.00">
-            </div>
-            <div>
-                <button type="submit">Add</button>
+        </form>
+
+        <div style="width:260px;min-width:200px">
+            <div class="card" style="padding:12px">
+                <div style="font-weight:700;margin-bottom:8px">Opening balance</div>
+                <form method="POST" action="{{ route('finances.opening') }}">
+                    @csrf
+                    <div style="display:flex;gap:8px">
+                        <input type="number" step="0.01" name="amount" placeholder="0.00"
+                            style="flex:1;padding:8px;border-radius:8px;border:1px solid #e6e9ef">
+                        <button type="submit">Set</button>
+                    </div>
+                    <div class="small" style="margin-top:8px;color:#6b7280">Set opening balance (positive for income,
+                        negative for expense)</div>
+                </form>
             </div>
         </div>
-    </form>
+    </div>
 
     <div style="overflow:auto">
         <table style="width:100%;border-collapse:collapse">
@@ -43,14 +63,27 @@
             </thead>
             <tbody>
                 @forelse($finances as $f)
-                    <tr>
+                    <tr class="finance-row" style="transition:background .2s">
                         <td style="padding:10px 8px;border-bottom:1px solid #f1f5f9">{{ $f->date->format('d/m/Y') }}</td>
                         <td style="padding:10px 8px;border-bottom:1px solid #f1f5f9">{{ $f->description }}</td>
                         <td style="padding:10px 8px;border-bottom:1px solid #f1f5f9">
                             {{ $f->income > 0 ? number_format($f->income, 2) : '-' }}</td>
                         <td style="padding:10px 8px;border-bottom:1px solid #f1f5f9">
                             {{ $f->expense > 0 ? number_format($f->expense, 2) : '-' }}</td>
-                        <td style="padding:10px 8px;border-bottom:1px solid #f1f5f9">{{ number_format($f->balance, 2) }}</td>
+                        <td style="padding:10px 8px;border-bottom:1px solid #f1f5f9">
+                            {{ number_format($f->balance, 2) }}
+                            <div style="margin-top:6px">
+                                <a href="{{ route('finances.edit', $f->id) }}"
+                                    style="margin-right:8px;color:#2563eb">Edit</a>
+                                <form method="POST" action="{{ route('finances.destroy', $f->id) }}"
+                                    style="display:inline" onsubmit="return confirm('Delete this entry?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        style="background:transparent;border:none;color:#ef4444;cursor:pointer">Delete</button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
                 @empty
                     <tr>
