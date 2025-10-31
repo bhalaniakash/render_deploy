@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->date('date');
             $table->string('description');
+            $table->string('category')->nullable();
             $table->decimal('income', 12, 2)->default(0);
             $table->decimal('expense', 12, 2)->default(0);
             $table->decimal('balance', 14, 2)->default(0);
