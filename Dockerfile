@@ -43,4 +43,4 @@ ENV PORT=8000
 RUN composer dump-autoload --optimize || true
 
 # Use artisan serve for a simple deployment. For production, swap to nginx+php-fpm.
-CMD ["sh", "-c", "php artisan migrate:fresh --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
+CMD ["sh", "-c", "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
