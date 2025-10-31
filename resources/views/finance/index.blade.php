@@ -449,9 +449,14 @@
 
                     // Form validation
                     form.addEventListener('submit', function(e) {
-                        const income = parseFloat(incomeInput?.value || 0);
-                        const expense = parseFloat(expenseInput?.value || 0);
-                        const method = methodSelect?.value;
+                        // Get values from the currently enabled (visible) inputs
+                        const enabledIncomeInput = form.querySelector('input[name="income"]:not([disabled])');
+                        const enabledExpenseInput = form.querySelector('input[name="expense"]:not([disabled])');
+                        const enabledMethodSelect = form.querySelector('select[name="method"]:not([disabled])');
+
+                        const income = parseFloat(enabledIncomeInput?.value || 0);
+                        const expense = parseFloat(enabledExpenseInput?.value || 0);
+                        const method = enabledMethodSelect?.value;
 
                         if (!method) {
                             e.preventDefault();
@@ -467,10 +472,10 @@
                     });
                 }
 
-        // Handle responsive form controls
-        function syncFormControls() {
-            const form = document.getElementById('add-transaction-form');
-            if (!form) return;                    // Disable hidden inputs to prevent validation issues
+                // Handle responsive form controls
+                function syncFormControls() {
+                    const form = document.getElementById('add-transaction-form');
+                    if (!form) return; // Disable hidden inputs to prevent validation issues
                     const mobileInputs = form.querySelectorAll('.block.md\\:hidden [name]');
                     const desktopInputs = form.querySelectorAll('.hidden.md\\:grid [name]');
 
